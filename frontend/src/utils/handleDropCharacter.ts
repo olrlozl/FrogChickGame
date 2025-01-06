@@ -1,12 +1,12 @@
-import { CharacterInfoInterface } from 'types/play';
+import { CharacterInfoInterface, CharacterPosition } from 'types/play';
 
 // 웹 드롭 처리
 export const handleDropCharacter = (
   e: React.DragEvent<HTMLDivElement>,
-  prevPosition: { row: number | null; col: number | null },
+  prevPosition: CharacterPosition,
   nextPosition: { row: number; col: number },
   updateBoard: (
-    prevPosition: { row: number | null; col: number | null },
+    prevPosition: CharacterPosition,
     nextPosition: { row: number; col: number },
     characterInfo: CharacterInfoInterface
   ) => void

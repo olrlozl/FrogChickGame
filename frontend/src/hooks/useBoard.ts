@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CharacterInfoInterface } from 'types/play';
+import { CharacterInfoInterface, CharacterPosition } from 'types/play';
 
 export const useBoard = () => {
   const [board, setBoard] = useState<(CharacterInfoInterface | null)[][]>(
@@ -9,7 +9,7 @@ export const useBoard = () => {
   );
 
   const updateBoard = (
-    prevPosition: { row: number | null; col: number | null } = {
+    prevPosition: CharacterPosition = {
       row: null,
       col: null,
     },

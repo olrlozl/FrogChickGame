@@ -5,13 +5,14 @@ import { useTouchEndListener } from 'hooks/useTouchEndListener';
 import { moveCharacterToSquare } from 'utils/moveCharacterToSquare';
 import { handleDropCharacter } from 'utils/handleDropCharacter';
 import { useCharacterStore } from 'stores/CharacterStore';
+import { CharacterPosition } from 'types/play';
 
 interface SquareProps {
   row: number;
   col: number;
   characterInfo: CharacterInfoInterface | null;
   updateBoard: (
-    prevPosition: { row: number | null; col: number | null },
+    prevPosition: CharacterPosition,
     nextPosition: { row: number; col: number },
     characterInfo: CharacterInfoInterface
   ) => void;

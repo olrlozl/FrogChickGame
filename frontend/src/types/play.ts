@@ -7,3 +7,7 @@ export interface CharacterInfoInterface {
   characterSize: CharacterSizeType;
   characterKey: string;
 }
+
+export type CharacterPosition =
+  | { row: number; col: number }
+  | { row: null; col: null };

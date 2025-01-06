@@ -1,15 +1,11 @@
 import { create } from 'zustand';
-
-interface Position {
-  row: number | null;
-  col: number | null;
-}
+import { CharacterPosition } from 'types/play';
 
 interface CharacterState {
   selectedCharacterKey: string | null;
-  prevPosition: Position;
-  setSelectedCharacterKey: (character: string | null) => void;
-  setPrevPosition: (position: Position) => void;
+  prevPosition: CharacterPosition;
+  setSelectedCharacterKey: (key: string | null) => void;
+  setPrevPosition: (position: CharacterPosition) => void;
 }
 
 export const useCharacterStore = create<CharacterState>((set) => ({
