@@ -17,7 +17,9 @@ export const useBoard = () => {
     characterInfo: CharacterInfoInterface
   ) => {
     setBoard((prevBoard) => {
-      const updatedBoard = prevBoard.map((col) => [...col]);
+      const updatedBoard = prevBoard.map((col) =>
+        col.map((cell) => (cell ? { ...cell } : null))
+      );
 
       if (prevPosition.col !== null && prevPosition.row !== null) {
         updatedBoard[prevPosition.col][prevPosition.row] = null;
