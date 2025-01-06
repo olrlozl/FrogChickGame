@@ -8,7 +8,7 @@ interface CharacterState {
   setPrevPosition: (position: CharacterPosition) => void;
 }
 
-export const useCharacterStore = create<CharacterState>((set) => ({
+export const usePlayStore = create<CharacterState>((set) => ({
   selectedCharacterKey: null,
   prevPosition: { row: null, col: null },
   setSelectedCharacterKey: (key) => set({ selectedCharacterKey: key }),

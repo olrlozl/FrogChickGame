@@ -6,7 +6,7 @@ import { handleDragStartCharacter } from 'utils/handleDragStartCharacter';
 import { handleTouchStartCharacter } from 'utils/handleTouchStartCharacter';
 import { handleTouchMoveCharacter } from 'utils/handleTouchMoveCharacter';
 import { handleTouchEndCharacter } from 'utils/handleTouchEndCharacter';
-import { useCharacterStore } from 'stores/CharacterStore';
+import { usePlayStore } from 'stores/playStore';
 
 interface CharacterProps {
   characterInfo: CharacterInfoInterface;
@@ -18,7 +18,7 @@ const Character = ({ characterInfo }: CharacterProps) => {
   const dragShadowImgRef = useRef<HTMLImageElement | null>(null); // 드래그 시 생성되는 쉐도우 이미지 참조
 
   const { selectedCharacterKey, setSelectedCharacterKey, setPrevPosition } =
-    useCharacterStore();
+    usePlayStore();
 
   const isSelected = selectedCharacterKey === characterKey;
 

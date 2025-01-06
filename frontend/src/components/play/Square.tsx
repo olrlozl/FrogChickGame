@@ -4,7 +4,7 @@ import Character from 'components/play/Character';
 import { useTouchEndListener } from 'hooks/useTouchEndListener';
 import { moveCharacterToSquare } from 'utils/moveCharacterToSquare';
 import { handleDropCharacter } from 'utils/handleDropCharacter';
-import { useCharacterStore } from 'stores/CharacterStore';
+import { usePlayStore } from 'stores/playStore';
 import { CharacterPosition } from 'types/play';
 
 interface SquareProps {
@@ -20,7 +20,7 @@ interface SquareProps {
 
 const Square = ({ row, col, characterInfo, updateBoard }: SquareProps) => {
   const { prevPosition, setSelectedCharacterKey, setPrevPosition } =
-    useCharacterStore();
+    usePlayStore();
 
   const nextPosition = { row: row, col: col };
 
