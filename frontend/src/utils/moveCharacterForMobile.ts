@@ -1,6 +1,6 @@
 import { CharacterInfoInterface, CharacterPosition } from 'types/play';
 
-export const moveCharacterToSquare = (
+export const moveCharacterForMobile = (
   prevPosition: CharacterPosition,
   nextPosition: { row: number; col: number },
   updateBoard: (

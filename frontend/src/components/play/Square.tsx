@@ -2,8 +2,8 @@ import { CharacterInfoInterface } from 'types/play';
 import 'styles/components/play/square.scss';
 import Character from 'components/play/Character';
 import { useTouchEndListener } from 'hooks/useTouchEndListener';
-import { moveCharacterToSquare } from 'utils/moveCharacterToSquare';
-import { handleDropCharacter } from 'utils/handleDropCharacter';
+import { moveCharacterForMobile } from 'utils/moveCharacterForMobile';
+import { moveCharacterForWeb } from 'utils/moveCharacterForWeb';
 import { usePlayStore } from 'stores/playStore';
 import { CharacterPosition } from 'types/play';
 
@@ -26,13 +26,13 @@ const Square = ({ row, col, characterInfo, updateBoard }: SquareProps) => {
 
   // 모바일 환경
   const dropCharacter = () =>
-    moveCharacterToSquare(prevPosition, nextPosition, updateBoard);
+    moveCharacterForMobile(prevPosition, nextPosition, updateBoard);
 
   useTouchEndListener(row, col, dropCharacter);
 
   // 웹 환경
   const handleDrop = (e: React.DragEvent<HTMLImageElement>) => {
-    handleDropCharacter(e, prevPosition, nextPosition, updateBoard);
+    moveCharacterForWeb(e, prevPosition, nextPosition, updateBoard);
     setSelectedCharacterKey(null);
     setPrevPosition({ row: null, col: null });
   };

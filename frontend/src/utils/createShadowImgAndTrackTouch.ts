@@ -1,7 +1,6 @@
 import { CharacterInfoInterface } from 'types/play';
 
-// 모바일 터치 시작 처리
-export const handleTouchStartCharacter = (
+export const createShadowImgAndTrackTouch = (
   e: React.TouchEvent<HTMLImageElement>,
   characterInfo: CharacterInfoInterface,
   imageSrc: string,

@@ -1,5 +1,4 @@
-// 모바일 터치 이동 처리
-export const handleTouchMoveCharacter = (
+export const updateShadowImgAndTrackTouch = (
   e: React.TouchEvent<HTMLImageElement>,
   dragShadowImgRef: React.RefObject<HTMLImageElement | null>
 ) => {

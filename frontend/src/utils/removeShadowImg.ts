@@ -1,5 +1,4 @@
-// 모바일 터치 종료 처리
-export const handleTouchEndCharacter = (
+export const removeShadowImg = (
   dragShadowImgRef: React.RefObject<HTMLImageElement | null>
 ) => {
   if (dragShadowImgRef.current) {

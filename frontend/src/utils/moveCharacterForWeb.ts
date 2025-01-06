@@ -1,7 +1,6 @@
 import { CharacterInfoInterface, CharacterPosition } from 'types/play';
 
-// 웹 드롭 처리
-export const handleDropCharacter = (
+export const moveCharacterForWeb = (
   e: React.DragEvent<HTMLDivElement>,
   prevPosition: CharacterPosition,
   nextPosition: { row: number; col: number },
