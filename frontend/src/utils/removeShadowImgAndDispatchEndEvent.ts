@@ -1,4 +1,4 @@
-export const removeShadowImg = (
+export const removeShadowImgAndDispatchEndEvent = (
   dragShadowImgRef: React.RefObject<HTMLImageElement | null>
 ) => {
   if (dragShadowImgRef.current) {

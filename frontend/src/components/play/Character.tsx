@@ -5,7 +5,7 @@ import { useRef } from 'react';
 import { saveCharacterInfo } from 'utils/saveCharacterInfo';
 import { createShadowImgAndTrackTouch } from 'utils/createShadowImgAndTrackTouch';
 import { updateShadowImgAndTrackTouch } from 'utils/updateShadowImgAndTrackTouch';
-import { removeShadowImg } from 'utils/removeShadowImg';
+import { removeShadowImgAndDispatchEndEvent } from 'utils/removeShadowImgAndDispatchEndEvent';
 import { usePlayStore } from 'stores/playStore';
 
 interface CharacterProps {
@@ -49,7 +49,7 @@ const Character = ({ characterInfo }: CharacterProps) => {
   };
 
   const handleTouchEnd = () => {
-    removeShadowImg(dragShadowImgRef);
+    removeShadowImgAndDispatchEndEvent(dragShadowImgRef);
     setSelectedCharacterKey(null);
     setPrevPosition({ row: null, col: null });
   };
