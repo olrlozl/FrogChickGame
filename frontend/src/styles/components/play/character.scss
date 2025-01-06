@@ -7,3 +7,19 @@
     border: 2px solid $color-red4;
   }
 }
+
+.character-img {
+  &.large {
+    height: 65px;
+    width: 65px;
+  }
+
+  &.middle {
+    height: 50px;
+    width: 50px;
+  }
+
+  &.small {
+    width: 30px;
+  }
+}
