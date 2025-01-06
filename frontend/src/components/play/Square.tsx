@@ -2,7 +2,6 @@ import { CharacterInfoInterface } from 'types/play';
 import 'styles/components/play/square.scss';
 import Character from 'components/play/Character';
 import { useTouchEndListener } from 'hooks/useTouchEndListener';
-import { moveCharacterForMobile } from 'utils/moveCharacterForMobile';
 import { moveCharacterForWeb } from 'utils/moveCharacterForWeb';
 import { usePlayStore } from 'stores/playStore';
 import { CharacterPosition } from 'types/play';
@@ -21,14 +20,10 @@ interface SquareProps {
 const Square = ({ row, col, characterInfo, updateBoard }: SquareProps) => {
   const { prevPosition, setSelectedCharacterKey, setPrevPosition } =
     usePlayStore();
-
-  const nextPosition = { row: row, col: col };
+  const nextPosition = { row, col };
 
   // 모바일 환경
-  const dropCharacter = () =>
-    moveCharacterForMobile(prevPosition, nextPosition, updateBoard);
-
-  useTouchEndListener(row, col, dropCharacter);
+  useTouchEndListener(row, col, updateBoard);
 
   // 웹 환경
   const handleDrop = (e: React.DragEvent<HTMLImageElement>) => {
