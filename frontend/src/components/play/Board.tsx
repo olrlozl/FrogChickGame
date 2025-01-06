@@ -1,11 +1,9 @@
 import Square from './Square';
 import 'styles/components/play/board.scss';
 import { useBoard } from 'hooks/useBoard';
-import { useTouchTracking } from 'hooks/useTouchTracking';
 
 const Board = () => {
   const { board, updateBoard } = useBoard();
-  useTouchTracking();
 
   return (
     <div className="board">

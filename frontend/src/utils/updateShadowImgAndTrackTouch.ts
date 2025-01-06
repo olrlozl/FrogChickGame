@@ -10,10 +10,4 @@ export const updateShadowImgAndTrackTouch = (
     dragShadowImgRef.current.style.left = `${touch.clientX}px`;
     dragShadowImgRef.current.style.top = `${touch.clientY}px`;
   }
-
-  // 터치 중인 위치를 다른 곳에서 처리할 수 있도록 customEvent를 만들어 window 객체에 dispatch
-  const customEvent = new CustomEvent('character-touch-move', {
-    detail: { x: touch.clientX, y: touch.clientY },
-  });
-  window.dispatchEvent(customEvent);
 };
