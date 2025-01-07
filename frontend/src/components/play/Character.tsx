@@ -6,7 +6,7 @@ import { saveCharacterInfo } from 'utils/saveCharacterInfo';
 import { createShadowImgAndTrackTouch } from 'utils/createShadowImgAndTrackTouch';
 import { updateShadowImgAndTrackTouch } from 'utils/updateShadowImgAndTrackTouch';
 import { removeShadowImgAndDispatchEndEvent } from 'utils/removeShadowImgAndDispatchEndEvent';
-import { updatePrevPosition } from 'utils/updatePrevPosition';
+import { getPrevPosition } from 'utils/getPrevPosition';
 import { usePlayStore } from 'stores/playStore';
 
 interface CharacterProps {
@@ -25,7 +25,13 @@ const Character = ({ characterInfo }: CharacterProps) => {
   const handleTouchStart = (e: React.TouchEvent<HTMLImageElement>) => {
     createShadowImgAndTrackTouch(e, characterInfo, imageSrc, dragShadowImgRef);
     setSelectedCharacterKey(characterKey);
-    updatePrevPosition(e.currentTarget, setPrevPosition);
+
+    const parentSquare = e.currentTarget.closest('.square');
+
+    if (parentSquare instanceof HTMLElement) {
+      const position = getPrevPosition(parentSquare);
+      setPrevPosition(position);
+    }
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLImageElement>) => {
@@ -42,7 +48,13 @@ const Character = ({ characterInfo }: CharacterProps) => {
   const handleDragStart = (e: React.DragEvent<HTMLImageElement>) => {
     saveCharacterInfo(e, characterInfo);
     setSelectedCharacterKey(characterKey);
-    updatePrevPosition(e.currentTarget, setPrevPosition);
+
+    const parentSquare = e.currentTarget.closest('.square');
+
+    if (parentSquare instanceof HTMLElement) {
+      const position = getPrevPosition(parentSquare);
+      setPrevPosition(position);
+    }
   };
 
   return (
