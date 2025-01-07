@@ -15,7 +15,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 
   if (existingUser) {
-    const error = new HttpError('이미 사용중인 닉네임입니다.', 422);
+    const error = new HttpError('이미 사용중인 닉네임입니다.', 409);
     return next(error);
   }
 
