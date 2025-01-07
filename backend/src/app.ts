@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import userRouter from './routes/user-routes';
 import rankRouter from './routes/rank-routes';
 import playRouter from './routes/play-routes';
+import HttpError from './models/http-error';
 
 const app = express();
 
@@ -21,7 +22,7 @@ app.use('/api/rank', rankRouter);
 app.use('/api/play', playRouter);
 
 // 에러 핸들링 미들웨어(위의 미들웨어 함수들 중 error가 발생하면 여기로 옴)
-app.use((error: any, req: Request, res: Response, next: NextFunction) => {
+app.use((error: HttpError, req: Request, res: Response, next: NextFunction) => {
   // 응답이 이미 전송된 경우
   if (res.headersSent) {
     return next(error); 
