@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
 import { CharacterPosition } from 'types/play';
 
 interface CharacterState {
@@ -8,9 +9,14 @@ interface CharacterState {
   setPrevPosition: (position: CharacterPosition) => void;
 }
 
-export const usePlayStore = create<CharacterState>((set) => ({
-  selectedCharacterKey: null,
-  prevPosition: { row: null, col: null },
-  setSelectedCharacterKey: (key) => set({ selectedCharacterKey: key }),
-  setPrevPosition: (position) => set({ prevPosition: position }),
-}));
+export const usePlayStore = create<CharacterState>()(
+  devtools(
+    (set) => ({
+      selectedCharacterKey: null,
+      prevPosition: { row: null, col: null },
+      setSelectedCharacterKey: (key) => set({ selectedCharacterKey: key }),
+      setPrevPosition: (position) => set({ prevPosition: position }),
+    }),
+    { name: 'PlayStore' }
+  )
+);
