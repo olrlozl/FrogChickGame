@@ -21,11 +21,6 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
   const createdUser = new User({
     nickname,
-    wins: 0,
-    losses: 0,
-    state: 'online',
-    rank: 100,
-    friends: [],
   });
 
   try {
@@ -39,4 +34,4 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   res.status(201).json({ user: createdUser });
 };
 
-export { createUser }
+export { createUser };

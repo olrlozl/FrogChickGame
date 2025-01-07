@@ -13,11 +13,11 @@ interface IUser extends Document {
 
 const userSchema = new Schema<IUser>({
   nickname: { type: String, required: true, unique: true, minlength: 2, maxlength: 6 },
-  wins: { type: Number, required: true },
-  losses: { type: Number, required: true },
-  state: { type: String, required: true },
-  rank: { type: Number, required: true },
-  friends: [ { type: mongoose.Types.ObjectId, ref: 'User'}]
+  wins: { type: Number, required: true, default: 0 },
+  losses: { type: Number, required: true, default: 0 },
+  state: { type: String, required: true, default: 'online' },
+  rank: { type: Number, required: true, default: null },
+  friends: [ { type: mongoose.Types.ObjectId, ref: 'User', default: []}]
 })
 
 
