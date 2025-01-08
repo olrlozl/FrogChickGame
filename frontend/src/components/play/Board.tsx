@@ -1,6 +1,6 @@
+import { useBoard } from 'hooks/useBoard';
 import Square from './Square';
 import 'styles/components/play/board.scss';
-import { useBoard } from 'hooks/useBoard';
 
 const Board = () => {
   const { board, updateBoard } = useBoard();
