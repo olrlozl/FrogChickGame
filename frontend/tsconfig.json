@@ -13,14 +13,12 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["jest"],
+    "types": ["jest", "node"],
     "baseUrl": "src",
     "paths": {
       "*": ["*"]
-    }
+    },
+    
   },
-  
-  "include": ["src/**/*", "src/global.d.ts"]
-  
-  
+  "include": ["src/**/*", "src/global.d.ts"],
 }
