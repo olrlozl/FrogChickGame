@@ -1,6 +1,14 @@
-.character {
-  display: block;
+@import 'styles/abstracts/variables';
 
+.character {
+  touch-action: none;
+
+  &.selected {
+    border: 2px solid $color-red4;
+  }
+}
+
+.character-img {
   &.large {
     height: 65px;
     width: 65px;

@@ -1,21 +1,39 @@
-import { CharacterOptionType, CharacterSizeType } from 'types/play';
-import 'styles/components/play/character.scss';
+import { CharacterInfoInterface } from 'types/play';
 import { CHARACTER_MAP } from 'constants/characterMap';
+import { usePlayStore } from 'stores/playStore';
+import { useTouchForMobile } from 'hooks/useTouchForMobile';
+import { useDragForWeb } from 'hooks/useDragForWeb';
+import 'styles/components/play/character.scss';
 
 interface CharacterProps {
-  characterOption: CharacterOptionType;
-  characterSize: CharacterSizeType;
+  characterInfo: CharacterInfoInterface;
 }
 
-const Character = ({ characterOption, characterSize }: CharacterProps) => {
+const Character = ({ characterInfo }: CharacterProps) => {
+  const { characterOption, characterSize, characterKey } = characterInfo;
   const imageSrc = CHARACTER_MAP[characterOption][characterSize];
 
+  const { selectedCharacterKey } = usePlayStore();
+  const isSelected = selectedCharacterKey === characterKey;
+
+  const { handleTouchStart, handleTouchMove, handleTouchEnd } =
+    useTouchForMobile(characterInfo);
+  const { handleDragStart } = useDragForWeb(characterInfo);
+
   return (
-    <img
-      className={`character ${characterOption} ${characterSize}`}
-      src={imageSrc}
-      alt={`${characterOption} ${characterSize} character`}
-    />
+    <div
+      className={`character ${characterKey} ${isSelected ? 'selected' : ''}`}
+    >
+      <img
+        className={`character-img ${characterOption} ${characterSize}`}
+        src={imageSrc}
+        alt={`${characterOption} ${characterSize} character`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onDragStart={handleDragStart}
+      />
+    </div>
   );
 };
 

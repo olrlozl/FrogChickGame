@@ -1,19 +1,9 @@
-import { useState } from 'react';
+import { useBoard } from 'hooks/useBoard';
 import Square from './Square';
-import { CharacterOptionType, CharacterSizeType } from 'types/play';
 import 'styles/components/play/board.scss';
 
 const Board = () => {
-  const [board, setBoard] = useState<
-    ({
-      characterOption: CharacterOptionType;
-      characterSize: CharacterSizeType;
-    } | null)[][]
-  >(
-    Array(3)
-      .fill(null)
-      .map(() => Array(3).fill(null))
-  );
+  const { board, updateBoard } = useBoard();
 
   return (
     <div className="board">
@@ -25,6 +15,7 @@ const Board = () => {
               row={rowIndex}
               col={colIndex}
               characterInfo={square}
+              updateBoard={updateBoard}
             />
           ))}
         </div>

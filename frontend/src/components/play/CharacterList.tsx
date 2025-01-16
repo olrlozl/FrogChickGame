@@ -1,5 +1,9 @@
 import 'styles/components/play/character-list.scss';
-import { CharacterOptionType, CharacterSizeType } from 'types/play';
+import {
+  CharacterOptionType,
+  CharacterSizeType,
+  CharacterInfoInterface,
+} from 'types/play';
 import Character from './Character';
 
 interface CharacterProps {
@@ -13,13 +17,17 @@ const CharacterList = ({ characterOption }: CharacterProps) => {
   return (
     <div className="character-list">
       {CHARACTER_SIZES.map((characterSize) =>
-        Array.from({ length: COUNT_PER_SIZE }).map((_, index) => (
-          <Character
-            key={`${characterSize}-${index}`}
-            characterOption={characterOption}
-            characterSize={characterSize}
-          />
-        ))
+        Array.from({ length: COUNT_PER_SIZE }).map((_, index) => {
+          const characterKey = `${characterOption}-${characterSize}-${index}`;
+
+          const characterInfo: CharacterInfoInterface = {
+            characterOption,
+            characterSize,
+            characterKey,
+          };
+
+          return <Character key={characterKey} characterInfo={characterInfo} />;
+        })
       )}
     </div>
   );
