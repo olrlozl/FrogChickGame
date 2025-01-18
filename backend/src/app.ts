@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import userRouter from './routes/user-routes';
 import rankRouter from './routes/rank-routes';
@@ -14,8 +13,7 @@ dotenv.config();
 const MONGO_URL = process.env.MONGO_URL as string;
 const SERVER_PORT = process.env.SERVER_PORT;
 
-// 요청으로 json이 오면 일반적 데이터 구조(객체, 배열 등)으로 변환
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use('/api/user', userRouter);
 app.use('/api/rank', rankRouter);
@@ -25,7 +23,7 @@ app.use('/api/play', playRouter);
 app.use((error: HttpError, req: Request, res: Response, next: NextFunction) => {
   // 응답이 이미 전송된 경우
   if (res.headersSent) {
-    return next(error); 
+    return next(error);
   }
 
   res.status(error.code || 500).json({
