@@ -1,6 +1,6 @@
 import HttpError from '../models/http-error';
 import User from '../models/user';
-import { getUserKakaoId } from '../services/kakao-service';
+import { getKakaoTokens, getUserKakaoId } from '../services/kakao-service';
 import { NextFunction, Request, Response } from 'express';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -63,4 +63,44 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createUser };
+const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
+  const { redirectUri, code } = req.body;
+
+  if (!redirectUri) {
+    throw new HttpError('redirectUri가 올바르지 않습니다.', 400);
+  }
+  if (!code) {
+    throw new HttpError('code가 올바르지 않습니다.', 400);
+  }
+
+  try {
+    // 카카오 API에서 인가 코드로 액세스 토큰과 리프레시 토큰 받기
+    const { accessToken, refreshToken } = await getKakaoTokens(
+      redirectUri,
+      code
+    );
+
+    // 카카오 API에서 사용자 카카오 ID 가져오기
+    const kakaoId = await getUserKakaoId(accessToken);
+
+    // 이미 존재하는 사용자 확인
+    const existingUser = await User.findOne({ kakaoId });
+
+    let nickname: string | null = null;
+    if (existingUser) {
+      nickname = existingUser.nickname; // 이미 등록된 닉네임
+    }
+
+    // 카카오 로그인에 성공 시
+    res.status(200).json({
+      accessToken,
+      nickname,
+      kakaoId,
+    });
+  } catch (err) {
+    const error = new HttpError('카카오 로그인에 실패했습니다.', 400);
+    return next(error);
+  }
+};
+
+export { createUser, kakaoLogin };
