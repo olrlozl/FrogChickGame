@@ -1,6 +1,10 @@
 import HttpError from '../models/http-error';
 import User from '../models/user';
-import { getKakaoTokens, getUserKakaoId } from '../services/kakao-service';
+import {
+  getKakaoTokens,
+  getUserKakaoId,
+  logoutKakao,
+} from '../services/kakao-service';
 import { NextFunction, Request, Response } from 'express';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -103,4 +107,25 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createUser, kakaoLogin };
+const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
+  const accessToken = req.headers.authorization?.split(' ')[1];
+
+  if (!accessToken) {
+    const error = new HttpError(
+      '토큰이 없어 카카오 로그아웃에 실패했습니다.',
+      401
+    );
+    return next(error);
+  }
+
+  try {
+    await logoutKakao(accessToken);
+    // 카카오 로그아웃 성공 시
+    res.status(204).send();
+  } catch (err) {
+    const error = new HttpError('카카오 로그아웃에 실패했습니다.', 400);
+    return next(error);
+  }
+};
+
+export { createUser, kakaoLogin, kakaoLogout };
