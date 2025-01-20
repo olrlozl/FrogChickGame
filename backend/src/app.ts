@@ -13,6 +13,17 @@ dotenv.config();
 const MONGO_URL = process.env.MONGO_URL as string;
 const SERVER_PORT = process.env.SERVER_PORT;
 
+// CORS 설정
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
+  next();
+});
+
 app.use(express.json());
 
 app.use('/api/user', userRouter);
