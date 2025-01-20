@@ -36,9 +36,9 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     const kakaoId = await getUserKakaoId(kakaoAccessToken);
 
     // 이미 존재하는 사용자 확인
-    const existingUser = await User.findOne({ kakaoId });
+    const signedupUser = await User.findOne({ kakaoId });
 
-    if (existingUser) {
+    if (signedupUser) {
       const error = new HttpError('이미 가입한 이력이 있습니다.', 409);
       return next(error);
     }
