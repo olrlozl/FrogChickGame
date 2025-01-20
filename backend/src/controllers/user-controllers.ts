@@ -52,9 +52,8 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
     // 유저 생성 성공 시
     res.status(201).json({ nickname });
-  } catch (err) {
-    const error = new HttpError('유저 생성에 실패했습니다.', 400);
-    return next(error);
+  } catch (error) {
+    return next(new HttpError('유저 생성에 실패했습니다.', 400));
   }
 };
 
@@ -62,10 +61,10 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
   const { redirectUri, code } = req.body;
 
   if (!redirectUri) {
-    throw new HttpError('redirectUri가 올바르지 않습니다.', 400);
+    return next(new HttpError('redirectUri가 올바르지 않습니다.', 400));
   }
   if (!code) {
-    throw new HttpError('code가 올바르지 않습니다.', 400);
+    return next(new HttpError('code가 올바르지 않습니다.', 400));
   }
 
   try {
@@ -92,9 +91,12 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       nickname,
       kakaoId,
     });
-  } catch (err) {
-    const error = new HttpError('카카오 로그인에 실패했습니다.', 400);
-    return next(error);
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return next(error);
+    } else {
+      return next(new HttpError('카카오 로그인에 실패했습니다.', 400));
+    }
   }
 };
 
@@ -113,9 +115,12 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
     await logoutKakao(kakaoAccessToken);
     // 카카오 로그아웃 성공 시
     res.status(204).send();
-  } catch (err) {
-    const error = new HttpError('카카오 로그아웃에 실패했습니다.', 400);
-    return next(error);
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return next(error);
+    } else {
+      return next(new HttpError('카카오 로그아웃에 실패했습니다.', 400));
+    }
   }
 };
 
