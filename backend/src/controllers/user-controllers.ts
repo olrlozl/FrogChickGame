@@ -8,13 +8,7 @@ import {
 import { NextFunction, Request, Response } from 'express';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
-  const accessToken = req.headers.authorization?.split(' ')[1];
-  const { nickname } = req.body;
-
-  if (!accessToken) {
-    const error = new HttpError('토큰이 없어 유저 생성에 실패했습니다.', 401);
-    return next(error);
-  }
+  const { nickname, kakaoId } = req.body;
 
   if (!nickname) {
     const error = new HttpError('닉네임은 필수입니다.', 400);
@@ -32,14 +26,11 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    // 카카오 API에서 사용자 카카오 ID 가져오기
-    const kakaoId = await getUserKakaoId(accessToken);
-
     // 이미 존재하는 사용자 확인
     const existingUser = await User.findOne({ kakaoId });
 
     if (existingUser) {
-      const error = new HttpError('이미 존재하는 사용자입니다.', 409);
+      const error = new HttpError('이미 가입한 이력이 있습니다.', 409);
       return next(error);
     }
 
@@ -79,13 +70,13 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
 
   try {
     // 카카오 API에서 인가 코드로 액세스 토큰과 리프레시 토큰 받기
-    const { accessToken, refreshToken } = await getKakaoTokens(
+    const { kakaoAccessToken, kakaoRefreshToken } = await getKakaoTokens(
       redirectUri,
       code
     );
 
     // 카카오 API에서 사용자 카카오 ID 가져오기
-    const kakaoId = await getUserKakaoId(accessToken);
+    const kakaoId = await getUserKakaoId(kakaoAccessToken);
 
     // 이미 존재하는 사용자 확인
     const existingUser = await User.findOne({ kakaoId });
@@ -97,7 +88,7 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
 
     // 카카오 로그인에 성공 시
     res.status(200).json({
-      accessToken,
+      kakaoAccessToken,
       nickname,
       kakaoId,
     });
@@ -108,9 +99,9 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
-  const accessToken = req.headers.authorization?.split(' ')[1];
+  const kakaoAccessToken = req.headers.authorization?.split(' ')[1];
 
-  if (!accessToken) {
+  if (!kakaoAccessToken) {
     const error = new HttpError(
       '토큰이 없어 카카오 로그아웃에 실패했습니다.',
       401
@@ -119,7 +110,7 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    await logoutKakao(accessToken);
+    await logoutKakao(kakaoAccessToken);
     // 카카오 로그아웃 성공 시
     res.status(204).send();
   } catch (err) {

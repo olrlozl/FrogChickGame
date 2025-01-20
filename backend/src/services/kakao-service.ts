@@ -27,18 +27,18 @@ const getKakaoTokens = async (redirectUri: string, code: string) => {
     // 응답에서 액세스 토큰과 리프레시 토큰 받기
     const { access_token, refresh_token } = response.data;
 
-    return { accessToken: access_token, refreshToken: refresh_token };
+    return { kakaoAccessToken: access_token, kakaoRefreshToken: refresh_token };
   } catch (error) {
     throw new HttpError('카카오 토큰 가져오기에 실패했습니다.', 500);
   }
 };
 
-const getUserKakaoId = async (accessToken: string) => {
+const getUserKakaoId = async (kakaoAccessToken: string) => {
   try {
     // 엑세스 토큰으로 사용자 정보 가져오기
     const response = await axios.get('https://kapi.kakao.com/v2/user/me', {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${kakaoAccessToken}`,
       },
     });
 
@@ -49,7 +49,7 @@ const getUserKakaoId = async (accessToken: string) => {
   }
 };
 
-const logoutKakao = async (accessToken: string) => {
+const logoutKakao = async (kakaoAccessToken: string) => {
   try {
     // 엑세스 토큰으로 로그아웃
     const response = await axios.post(
@@ -57,7 +57,7 @@ const logoutKakao = async (accessToken: string) => {
       null,
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${kakaoAccessToken}`,
         },
       }
     );
