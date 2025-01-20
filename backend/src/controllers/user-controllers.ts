@@ -51,7 +51,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     await createdUser.save();
 
     // 유저 생성 성공 시
-    res.status(201).json({ nickname });
+    res.status(204).send();
   } catch (error) {
     return next(new HttpError('유저 생성에 실패했습니다.', 400));
   }
@@ -88,7 +88,6 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
     // 카카오 로그인에 성공 시
     res.status(200).json({
       kakaoAccessToken,
-      nickname,
       kakaoId,
     });
   } catch (error) {
