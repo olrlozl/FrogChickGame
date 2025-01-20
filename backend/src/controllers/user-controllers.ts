@@ -8,7 +8,13 @@ import {
 import { NextFunction, Request, Response } from 'express';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
-  const { nickname, kakaoId } = req.body;
+  const kakaoAccessToken = req.headers.authorization?.split(' ')[1];
+  const { nickname } = req.body;
+
+  if (!kakaoAccessToken) {
+    const error = new HttpError('카카오 엑세스 토큰은 필수입니다.', 401);
+    return next(error);
+  }
 
   if (!nickname) {
     const error = new HttpError('닉네임은 필수입니다.', 400);
@@ -26,6 +32,9 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
+    // 카카오 API에서 사용자 카카오 ID 가져오기
+    const kakaoId = await getUserKakaoId(kakaoAccessToken);
+
     // 이미 존재하는 사용자 확인
     const existingUser = await User.findOne({ kakaoId });
 
@@ -51,7 +60,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     await createdUser.save();
 
     // 유저 생성 성공 시
-    res.status(204).send();
+    res.status(204).send(); // res.status(201).json({accessToken});으로 변경 예정
   } catch (error) {
     return next(new HttpError('유저 생성에 실패했습니다.', 400));
   }
@@ -77,19 +86,21 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
     // 카카오 API에서 사용자 카카오 ID 가져오기
     const kakaoId = await getUserKakaoId(kakaoAccessToken);
 
-    // 이미 존재하는 사용자 확인
-    const existingUser = await User.findOne({ kakaoId });
-
-    let nickname: string | null = null;
-    if (existingUser) {
-      nickname = existingUser.nickname; // 이미 등록된 닉네임
-    }
-
     // 카카오 로그인에 성공 시
-    res.status(200).json({
-      kakaoAccessToken,
-      kakaoId,
-    });
+    // 이미 가입한 사용자인지 확인
+    const signedupUser = await User.findOne({ kakaoId });
+
+    if (signedupUser) {
+      res.status(200).json({
+        // accessToken, (추가예정)
+        kakaoAccessToken: null,
+      });
+    } else {
+      res.status(200).json({
+        // accessToken: null, (추가예정)
+        kakaoAccessToken,
+      });
+    }
   } catch (error) {
     if (error instanceof HttpError) {
       return next(error);
