@@ -1,6 +1,7 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import HttpError from '../models/http-error';
+import redisClient from '../config/redis-client';
 
 dotenv.config();
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
@@ -67,4 +68,50 @@ const logoutKakao = async (kakaoAccessToken: string) => {
   }
 };
 
-export { getKakaoTokens, getUserKakaoId, logoutKakao };
+const storeKakaoAccessTokenInRedis = async (
+  userId: string,
+  kakaoAccessToken: string
+) => {
+  try {
+    await redisClient.set(`kakaoAccessToken:${userId}`, kakaoAccessToken, {
+      EX: 3600, // 1시간 후 만료
+    });
+  } catch (error) {
+    throw new HttpError(
+      'Redis에 카카오 액세스 토큰 저장하기에 실패했습니다.',
+      500
+    );
+  }
+};
+
+const getKakaoAccessTokenFromRedis = async (userId: string) => {
+  try {
+    const token = await redisClient.get(`kakaoAccessToken:${userId}`);
+    if (!token) {
+      throw new HttpError('해당 사용자의 액세스 토큰을 찾을 수 없습니다.', 404);
+    }
+    return token;
+  } catch (error) {
+    throw new HttpError(
+      'Redis에서 카카오 액세스 토큰 조회하기에 실패했습니다.',
+      500
+    );
+  }
+};
+
+const removeKakaoAccessTokenFromRedis = async (userId: string) => {
+  try {
+    await redisClient.del(`kakaoAccessToken:${userId}`);
+  } catch (error) {
+    throw new HttpError('Redis에서 토큰 제거에 실패했습니다.', 500);
+  }
+};
+
+export {
+  getKakaoTokens,
+  getUserKakaoId,
+  logoutKakao,
+  storeKakaoAccessTokenInRedis,
+  getKakaoAccessTokenFromRedis,
+  removeKakaoAccessTokenFromRedis,
+};
