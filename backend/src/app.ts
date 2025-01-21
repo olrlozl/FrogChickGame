@@ -46,9 +46,10 @@ app.use((error: HttpError, req: Request, res: Response, next: NextFunction) => {
 mongoose
   .connect(MONGO_URL)
   .then(() => {
+    console.log('MongoDB 서버 연결 성공');
     // 백엔드 서버와 연결(5000번 포트)
     app.listen(SERVER_PORT);
   })
-  .catch((err) => {
-    console.log(err);
+  .catch((error) => {
+    console.error('MongoDB 연결 실패:', error);
   });
