@@ -97,18 +97,25 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
     // 카카오 API에서 사용자 카카오 ID 가져오기
     const kakaoId = await getUserKakaoId(kakaoAccessToken);
 
-    // 카카오 로그인에 성공 시
     // 이미 가입한 사용자인지 확인
     const signedupUser = await User.findOne({ kakaoId });
 
     if (signedupUser) {
+      // jwt 토큰 발급
+      const jwtAccessToken = generateJwtToken({ userId: signedupUser.id });
+
+      // redis에 카카오 액세스 토큰 저장
+      await storeKakaoAccessTokenInRedis(signedupUser.id, kakaoAccessToken);
+
+      // 카카오 로그인에 성공 시 (이미 가입한 사용자일 경우)
       res.status(200).json({
-        // accessToken, (추가예정)
+        jwtAccessToken,
         kakaoAccessToken: null,
       });
     } else {
+      // 카카오 로그인에 성공 시 (미가입 사용자일 경우)
       res.status(200).json({
-        // accessToken: null, (추가예정)
+        jwtAccessToken: null,
         kakaoAccessToken,
       });
     }
