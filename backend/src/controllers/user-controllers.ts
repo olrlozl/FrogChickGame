@@ -4,8 +4,13 @@ import {
   getKakaoTokens,
   getUserKakaoId,
   logoutKakao,
-} from '../services/kakao-service';
+  storeKakaoAccessTokenInRedis,
+} from '../services/user-service';
 import { NextFunction, Request, Response } from 'express';
+import dotenv from 'dotenv';
+import { generateJwtToken } from '../utils/jwt-util';
+
+dotenv.config();
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const kakaoAccessToken = req.headers.authorization?.split(' ')[1];
@@ -35,7 +40,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     // 카카오 API에서 사용자 카카오 ID 가져오기
     const kakaoId = await getUserKakaoId(kakaoAccessToken);
 
-    // 이미 존재하는 사용자 확인
+    // 이미 가입한 사용자인지 확인
     const signedupUser = await User.findOne({ kakaoId });
 
     if (signedupUser) {
@@ -59,8 +64,14 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     // 사용자 정보 저장
     await createdUser.save();
 
+    // jwt 토큰 발급
+    const jwtAccessToken = generateJwtToken({ userId: createdUser.id });
+
+    // redis에 카카오 액세스 토큰 저장
+    await storeKakaoAccessTokenInRedis(createdUser.id, kakaoAccessToken);
+
     // 유저 생성 성공 시
-    res.status(204).send(); // res.status(201).json({accessToken});으로 변경 예정
+    res.status(201).json({ jwtAccessToken });
   } catch (error) {
     return next(new HttpError('유저 생성에 실패했습니다.', 400));
   }
