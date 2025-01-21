@@ -5,6 +5,8 @@ import {
   getUserKakaoId,
   logoutKakao,
   storeKakaoAccessTokenInRedis,
+  getKakaoAccessTokenFromRedis,
+  removeKakaoAccessTokenFromRedis,
 } from '../services/user-service';
 import { NextFunction, Request, Response } from 'express';
 import dotenv from 'dotenv';
@@ -129,18 +131,22 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
-  const kakaoAccessToken = req.headers.authorization?.split(' ')[1];
+  // checkAuth 미들웨어에서 설정된 userId를 사용해 현재 요청 사용자를 식별
+  const userId = req.userId;
 
-  if (!kakaoAccessToken) {
-    const error = new HttpError(
-      '토큰이 없어 카카오 로그아웃에 실패했습니다.',
-      401
-    );
-    return next(error);
+  if (!userId) {
+    return next(new HttpError('userId가 없습니다.', 400));
   }
 
   try {
+    // reids에서 카카오 액세스 토큰 조회
+    const kakaoAccessToken = await getKakaoAccessTokenFromRedis(userId);
+
     await logoutKakao(kakaoAccessToken);
+
+    // redis에서 카카오 액세스 토큰 삭제
+    await removeKakaoAccessTokenFromRedis(userId);
+
     // 카카오 로그아웃 성공 시
     res.status(204).send();
   } catch (error) {
