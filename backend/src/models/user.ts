@@ -5,7 +5,7 @@ type UserStateType = 'online' | 'offline' | 'playing';
 interface IUser extends Document {
   nickname: string;
   kakaoId: number;
-  socketId: String;
+  socketId: string;
   wins: number;
   losses: number;
   rank: number;
@@ -26,7 +26,7 @@ const userSchema = new Schema<IUser>({
     maxlength: 6,
   },
   kakaoId: { type: Number, required: true, unique: true },
-  socketId: { type: Number, unique: true },
+  socketId: { type: String, unique: true },
   wins: { type: Number, required: true, default: 0 },
   losses: { type: Number, required: true, default: 0 },
   rank: { type: Number, default: null },
