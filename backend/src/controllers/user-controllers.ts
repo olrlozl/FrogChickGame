@@ -75,7 +75,11 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     // 유저 생성 성공 시
     res.status(201).json({ jwtAccessToken });
   } catch (error) {
-    return next(new HttpError('유저 생성에 실패했습니다.', 400));
+    if (error instanceof HttpError) {
+      return next(error);
+    } else {
+      return next(new HttpError('유저 생성에 실패했습니다.', 400));
+    }
   }
 };
 
