@@ -29,7 +29,11 @@ const checkAuth = (req: Request, res: Response, next: NextFunction) => {
     const jwtSecretKey = process.env.JWT_SECRET_KEY || 'default_secret_key';
     const decodedToken = jwt.verify(jwtAccessToken, jwtSecretKey);
 
-    if (decodedToken && (decodedToken as JwtPayload).userId) {
+    if (
+      decodedToken &&
+      typeof decodedToken === 'object' &&
+      'userId' in decodedToken
+    ) {
       // 요청 객체(req)의 userId 속성에 디코딩된 토큰의 userId를 저장하여 이후 미들웨어에서 사용 가능하도록 설정
       req.userId = (decodedToken as JwtPayload).userId;
       return next();
