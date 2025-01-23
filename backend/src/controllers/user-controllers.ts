@@ -9,11 +9,14 @@ import {
   removeKakaoAccessTokenFromRedis,
   storeJwtRefreshTokenInRedis,
   removeJwtRefreshTokenFromRedis,
+  getJwtRefreshTokenFromRedis,
 } from '../services/user-service';
 import { NextFunction, Request, Response } from 'express';
 import {
   generateJwtAccessToken,
   generateJwtRefreshToken,
+  getUserIdFromJwtAccessToken,
+  verifyJwtToken,
 } from '../utils/jwt-util';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -224,4 +227,69 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createUser, kakaoLogin, kakaoLogout };
+const refreshJwtAccessToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const jwtAccessToken = req.headers.authorization?.split(' ')[1];
+
+  if (!jwtAccessToken) {
+    return next(
+      new HttpError(
+        'jwt 엑세스 토큰이 필요합니다.',
+        401,
+        'MISSING_JWT_ACCESS_TOKEN'
+      )
+    );
+  }
+
+  try {
+    // 만료된 jwt 엑세스 토큰 검증
+    try {
+      const decodedToken = verifyJwtToken(jwtAccessToken);
+
+      if (decodedToken) {
+        return next(
+          new HttpError(
+            'jwt 엑세스 토큰이 만료되지 않았습니다. 갱신할 필요가 없습니다.',
+            400,
+            'JWT_ACCESS_TOKEN_NOT_EXPIRED'
+          )
+        );
+      }
+    } catch (error) {
+      // jwt 엑세스 토큰이 만료된 경우!
+      if (error instanceof HttpError && error.type === 'EXPIRED_JWT_TOKEN') {
+        // 만료된 jwt 엑세스 토큰의 payload에서 userId 추출
+        const userId = getUserIdFromJwtAccessToken(jwtAccessToken);
+
+        // redis에서 jwt 리프레시 토큰 조회
+        const jwtRefreshToken = await getJwtRefreshTokenFromRedis(userId);
+
+        // jwt 리프레시 토큰 검증
+        verifyJwtToken(jwtRefreshToken);
+
+        // 새로운 jwt 엑세스 토큰 발급
+        const newJwtAccessToken = generateJwtAccessToken({ userId });
+
+        // jwt 엑세스 토큰 갱신에 성공 시
+        res.status(200).json({ newJwtAccessToken });
+      }
+    }
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return next(error);
+    } else {
+      return next(
+        new HttpError(
+          'jwt 엑세스 토큰 갱신에 실패했습니다.',
+          500,
+          'FAILED_REFRESH_JWT_ACCESS_TOKEN'
+        )
+      );
+    }
+  }
+};
+
+export { createUser, kakaoLogin, kakaoLogout, refreshJwtAccessToken };
