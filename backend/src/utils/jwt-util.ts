@@ -37,4 +37,40 @@ const generateJwtRefreshToken = (payload: JwtPayload) => {
   }
 };
 
-export { generateJwtAccessToken, generateJwtRefreshToken };
+const verifyJwtToken = (jwtToken: string) => {
+  try {
+    // jwt 토큰 검증
+    const decodedToken = jwt.verify(jwtToken, jwtSecretKey);
+
+    if (
+      decodedToken &&
+      typeof decodedToken === 'object' &&
+      'userId' in decodedToken
+    ) {
+      return decodedToken;
+    } else {
+      throw new HttpError(
+        'jwt 토큰이 유효하지 않습니다.',
+        401,
+        'INVALID_JWT_TOKEN'
+      );
+    }
+  } catch (error) {
+    // jwt 토큰 만료 시
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new HttpError(
+        'jwt 토큰이 만료되었습니다.',
+        401,
+        'EXPIRED_JWT_TOKEN'
+      );
+    } else {
+      throw new HttpError(
+        'jwt 토큰 검증에 실패했습니다.',
+        500,
+        'FAILED_VERIFICATION_JWT_TOKEN'
+      );
+    }
+  }
+};
+
+export { generateJwtAccessToken, generateJwtRefreshToken, verifyJwtToken };
