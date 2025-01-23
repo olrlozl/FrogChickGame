@@ -1,19 +1,24 @@
 import jwt from 'jsonwebtoken';
 import HttpError from '../models/http-error';
 
+const jwtSecretKey = process.env.JWT_SECRET_KEY || 'default_secret_key';
+
 interface JwtPayload {
   userId: string;
 }
 
-const generateJwtToken = (payload: JwtPayload): string => {
-  const jwtSecretKey = process.env.JWT_SECRET_KEY || 'default_secret_key';
+const generateJwtAccessToken = (payload: JwtPayload) => {
   try {
-    // jwt 토큰 발급
-    const token = jwt.sign(payload, jwtSecretKey, { expiresIn: '1h' });
-    return token;
+    // jwt 엑세스 토큰 발급 (만료시간: 1시간)
+    const jwtAccessToken = jwt.sign(payload, jwtSecretKey, { expiresIn: '1h' });
+    return jwtAccessToken;
   } catch (error) {
-    throw new HttpError('JWT 토큰 생성에 실패했습니다.', 500);
+    throw new HttpError(
+      'jwt 엑세스 토큰 생성에 실패했습니다.',
+      500,
+      'FAILED_GENERATION_JWT_ACCESS_TOKEN'
+    );
   }
 };
 
-export { generateJwtToken };
+export { generateJwtAccessToken };
