@@ -130,6 +130,58 @@ const removeKakaoAccessTokenFromRedis = async (userId: string) => {
   }
 };
 
+// Redis에 jwt 리프레시 토큰 저장
+const storeJwtRefreshTokenInRedis = async (
+  userId: string,
+  jwtRefreshToken: string
+) => {
+  try {
+    await redisClient.set(`jwtRefreshToken:${userId}`, jwtRefreshToken, {
+      EX: 7 * 24 * 60 * 60, // 7일 후 만료
+    });
+  } catch (error) {
+    throw new HttpError(
+      'Redis에 jwt 리프레시 토큰 저장에 실패했습니다.',
+      500,
+      'FAILED_STORE_JWT_REFRESH_TOKEN'
+    );
+  }
+};
+
+// Redis에서 jwt 리프레시 토큰 조회
+const getJwtRefreshTokenFromRedis = async (userId: string) => {
+  try {
+    const token = await redisClient.get(`jwtRefreshToken:${userId}`);
+    if (!token) {
+      throw new HttpError(
+        '해당 사용자의 jwt 리프레시 토큰을 찾을 수 없습니다.',
+        404,
+        'NOT_FOUND_JWT_REFRESH_TOKEN'
+      );
+    }
+    return token;
+  } catch (error) {
+    throw new HttpError(
+      'Redis에서 jwt 리프레시 토큰 조회에 실패했습니다.',
+      500,
+      'FAILED_GET_JWT_REFRESH_TOKEN'
+    );
+  }
+};
+
+// Redis에서 jwt 리프레시 토큰 제거
+const removeJwtRefreshTokenFromRedis = async (userId: string) => {
+  try {
+    await redisClient.del(`jwtRefreshToken:${userId}`);
+  } catch (error) {
+    throw new HttpError(
+      'Redis에서 jwt 리프레시 토큰 제거에 실패했습니다.',
+      500,
+      'FAILED_REMOVE_JWT_REFRESH_TOKEN'
+    );
+  }
+};
+
 export {
   getKakaoTokens,
   getUserKakaoId,
@@ -137,4 +189,7 @@ export {
   storeKakaoAccessTokenInRedis,
   getKakaoAccessTokenFromRedis,
   removeKakaoAccessTokenFromRedis,
+  storeJwtRefreshTokenInRedis,
+  getJwtRefreshTokenFromRedis,
+  removeJwtRefreshTokenFromRedis,
 };

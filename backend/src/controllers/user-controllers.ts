@@ -7,6 +7,8 @@ import {
   storeKakaoAccessTokenInRedis,
   getKakaoAccessTokenFromRedis,
   removeKakaoAccessTokenFromRedis,
+  storeJwtRefreshTokenInRedis,
+  removeJwtRefreshTokenFromRedis,
 } from '../services/user-service';
 import { NextFunction, Request, Response } from 'express';
 import {
@@ -89,6 +91,9 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     // jwt 리프레시 토큰 발급
     const jwtRefreshToken = generateJwtRefreshToken({ userId: createdUser.id });
 
+    // redis에 jwt 리프레시 토큰 저장
+    await storeJwtRefreshTokenInRedis(createdUser.id, jwtRefreshToken);
+
     // redis에 카카오 액세스 토큰 저장
     await storeKakaoAccessTokenInRedis(createdUser.id, kakaoAccessToken);
 
@@ -147,6 +152,9 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
         userId: signedupUser.id,
       });
 
+      // redis에 jwt 리프레시 토큰 저장
+      await storeJwtRefreshTokenInRedis(signedupUser.id, jwtRefreshToken);
+
       // redis에 카카오 액세스 토큰 저장
       await storeKakaoAccessTokenInRedis(signedupUser.id, kakaoAccessToken);
 
@@ -195,6 +203,9 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
 
     // redis에서 카카오 액세스 토큰 삭제
     await removeKakaoAccessTokenFromRedis(userId);
+
+    // redis에서 jwt 리프레시 토큰 삭제
+    await removeJwtRefreshTokenFromRedis(userId);
 
     // 카카오 로그아웃 성공 시
     res.status(204).send();
