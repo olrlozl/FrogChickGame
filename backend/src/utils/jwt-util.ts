@@ -73,4 +73,28 @@ const verifyJwtToken = (jwtToken: string) => {
   }
 };
 
-export { generateJwtAccessToken, generateJwtRefreshToken, verifyJwtToken };
+const getUserIdFromJwtAccessToken = (jwtAccessToken: string) => {
+  // jwt 엑세스 토큰에서 userId 추출
+  const decodedToken = jwt.decode(jwtAccessToken);
+
+  if (
+    !decodedToken ||
+    typeof decodedToken !== 'object' ||
+    !('userId' in decodedToken)
+  ) {
+    throw new HttpError(
+      'jwt 토큰이 유효하지 않습니다.',
+      401,
+      'INVALID_JWT_TOKEN'
+    );
+  }
+
+  return decodedToken.userId;
+};
+
+export {
+  generateJwtAccessToken,
+  generateJwtRefreshToken,
+  verifyJwtToken,
+  getUserIdFromJwtAccessToken,
+};
