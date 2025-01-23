@@ -9,22 +9,30 @@ import {
   removeKakaoAccessTokenFromRedis,
 } from '../services/user-service';
 import { NextFunction, Request, Response } from 'express';
-import dotenv from 'dotenv';
-import { generateJwtToken } from '../utils/jwt-util';
-
-dotenv.config();
+import {
+  generateJwtAccessToken,
+  generateJwtRefreshToken,
+} from '../utils/jwt-util';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const kakaoAccessToken = req.headers.authorization?.split(' ')[1];
   const { nickname } = req.body;
 
   if (!kakaoAccessToken) {
-    const error = new HttpError('카카오 엑세스 토큰은 필수입니다.', 401);
+    const error = new HttpError(
+      '카카오 엑세스 토큰은 필수입니다.',
+      401,
+      'MISSING_KAKAO_ACCESS_TOKEN'
+    );
     return next(error);
   }
 
   if (!nickname) {
-    const error = new HttpError('닉네임은 필수입니다.', 400);
+    const error = new HttpError(
+      '닉네임은 필수입니다.',
+      400,
+      'MISSING_NICKNAME'
+    );
     return next(error);
   }
 
@@ -33,7 +41,8 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   if (!nicknameRegex.test(nickname)) {
     const error = new HttpError(
       '닉네임은 한글, 영어 2~6자만 입력 가능합니다.',
-      422
+      422,
+      'IVALID_NICKNAME'
     );
     return next(error);
   }
@@ -46,14 +55,22 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     const signedupUser = await User.findOne({ kakaoId });
 
     if (signedupUser) {
-      const error = new HttpError('이미 가입한 이력이 있습니다.', 409);
+      const error = new HttpError(
+        '이미 가입한 이력이 있습니다.',
+        409,
+        'SIGNEDUP_USER'
+      );
       return next(error);
     }
 
     // 닉네임 중복 확인
     const existingNickname = await User.findOne({ nickname });
     if (existingNickname) {
-      const error = new HttpError('이미 사용중인 닉네임입니다.', 409);
+      const error = new HttpError(
+        '이미 사용중인 닉네임입니다.',
+        409,
+        'DUPLICATED_NICKNAME'
+      );
       return next(error);
     }
 
@@ -66,8 +83,11 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     // 사용자 정보 저장
     await createdUser.save();
 
-    // jwt 토큰 발급
-    const jwtAccessToken = generateJwtToken({ userId: createdUser.id });
+    // jwt 엑세스 토큰 발급
+    const jwtAccessToken = generateJwtAccessToken({ userId: createdUser.id });
+
+    // jwt 리프레시 토큰 발급
+    const jwtRefreshToken = generateJwtRefreshToken({ userId: createdUser.id });
 
     // redis에 카카오 액세스 토큰 저장
     await storeKakaoAccessTokenInRedis(createdUser.id, kakaoAccessToken);
@@ -78,7 +98,9 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     if (error instanceof HttpError) {
       return next(error);
     } else {
-      return next(new HttpError('유저 생성에 실패했습니다.', 400));
+      return next(
+        new HttpError('유저 생성에 실패했습니다.', 400, 'FAILED_CREATE_USER')
+      );
     }
   }
 };
@@ -87,10 +109,18 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
   const { redirectUri, code } = req.body;
 
   if (!redirectUri) {
-    return next(new HttpError('redirectUri가 올바르지 않습니다.', 400));
+    return next(
+      new HttpError(
+        'redirectUri가 올바르지 않습니다.',
+        400,
+        'INVALID_REDIRECT_URI'
+      )
+    );
   }
   if (!code) {
-    return next(new HttpError('code가 올바르지 않습니다.', 400));
+    return next(
+      new HttpError('code가 올바르지 않습니다.', 400, 'INVALID_CODE')
+    );
   }
 
   try {
@@ -107,8 +137,15 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
     const signedupUser = await User.findOne({ kakaoId });
 
     if (signedupUser) {
-      // jwt 토큰 발급
-      const jwtAccessToken = generateJwtToken({ userId: signedupUser.id });
+      // jwt 엑세스 토큰 발급
+      const jwtAccessToken = generateJwtAccessToken({
+        userId: signedupUser.id,
+      });
+
+      // jwt 리프레시 토큰 발급
+      const jwtRefreshToken = generateJwtRefreshToken({
+        userId: signedupUser.id,
+      });
 
       // redis에 카카오 액세스 토큰 저장
       await storeKakaoAccessTokenInRedis(signedupUser.id, kakaoAccessToken);
@@ -129,7 +166,13 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
     if (error instanceof HttpError) {
       return next(error);
     } else {
-      return next(new HttpError('카카오 로그인에 실패했습니다.', 400));
+      return next(
+        new HttpError(
+          '카카오 로그인에 실패했습니다.',
+          400,
+          'FAILED_KAKAO_LOGIN'
+        )
+      );
     }
   }
 };
@@ -139,7 +182,9 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
   const userId = req.userId;
 
   if (!userId) {
-    return next(new HttpError('userId가 없습니다.', 400));
+    return next(
+      new HttpError('유효한 사용자 정보가 필요합니다.', 400, 'MISSING_USER_ID')
+    );
   }
 
   try {
@@ -157,7 +202,13 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
     if (error instanceof HttpError) {
       return next(error);
     } else {
-      return next(new HttpError('카카오 로그아웃에 실패했습니다.', 400));
+      return next(
+        new HttpError(
+          '카카오 로그아웃에 실패했습니다.',
+          400,
+          'FAILED_KAKAO_LOGOUT'
+        )
+      );
     }
   }
 };
