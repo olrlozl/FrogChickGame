@@ -1,9 +1,7 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import { JwtPayload } from 'jsonwebtoken';
 import HttpError from '../models/http-error';
+import { verifyJwtToken } from '../utils/jwt-util';
 import { NextFunction, Request, Response } from 'express';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 declare global {
   namespace Express {
@@ -21,27 +19,31 @@ const checkAuth = (req: Request, res: Response, next: NextFunction) => {
   const jwtAccessToken = req.headers.authorization?.split(' ')[1];
 
   if (!jwtAccessToken) {
-    return next(new HttpError('jwtAccessToken이 필요합니다.', 401));
+    return next(
+      new HttpError(
+        'jwt 엑세스 토큰이 필요합니다.',
+        401,
+        'MISSING_JWT_ACCESS_TOKEN'
+      )
+    );
   }
 
   try {
-    // jwt 토큰 검증
-    const jwtSecretKey = process.env.JWT_SECRET_KEY || 'default_secret_key';
-    const decodedToken = jwt.verify(jwtAccessToken, jwtSecretKey);
+    // jwt 엑세스 토큰 검증
+    const decodedToken = verifyJwtToken(jwtAccessToken);
 
-    if (
-      decodedToken &&
-      typeof decodedToken === 'object' &&
-      'userId' in decodedToken
-    ) {
-      // 요청 객체(req)의 userId 속성에 디코딩된 토큰의 userId를 저장하여 이후 미들웨어에서 사용 가능하도록 설정
-      req.userId = (decodedToken as JwtPayload).userId;
-      return next();
-    } else {
-      return next(new HttpError('유효하지 않은 JWT 토큰입니다.', 401));
-    }
+    // 요청 객체(req)의 userId 속성에 디코딩된 토큰의 userId를 저장하여 이후 미들웨어에서 사용 가능하도록 설정
+    req.userId = (decodedToken as JwtPayload).userId;
+
+    return next();
   } catch (error) {
-    return next(new HttpError('JWT 토큰 검증에 실패했습니다.', 400));
+    return next(
+      new HttpError(
+        'jwt 토큰 검증에 실패했습니다.',
+        400,
+        'FAILED_VERIFICATION_JWT_TOKEN'
+      )
+    );
   }
 };
 export { checkAuth };
