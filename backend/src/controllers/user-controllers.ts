@@ -13,8 +13,7 @@ import {
 } from '../services/user-service';
 import { NextFunction, Request, Response } from 'express';
 import {
-  generateJwtAccessToken,
-  generateJwtRefreshToken,
+  generateJwtToken,
   getUserIdFromJwtAccessToken,
   verifyJwtToken,
 } from '../utils/jwt-util';
@@ -89,10 +88,16 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     await createdUser.save();
 
     // jwt 엑세스 토큰 발급
-    const jwtAccessToken = generateJwtAccessToken({ userId: createdUser.id });
+    const jwtAccessToken = generateJwtToken(
+      { userId: createdUser.id },
+      'access'
+    );
 
     // jwt 리프레시 토큰 발급
-    const jwtRefreshToken = generateJwtRefreshToken({ userId: createdUser.id });
+    const jwtRefreshToken = generateJwtToken(
+      { userId: createdUser.id },
+      'refresh'
+    );
 
     // redis에 jwt 리프레시 토큰 저장
     await storeJwtRefreshTokenInRedis(createdUser.id, jwtRefreshToken);
@@ -146,14 +151,20 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
 
     if (signedupUser) {
       // jwt 엑세스 토큰 발급
-      const jwtAccessToken = generateJwtAccessToken({
-        userId: signedupUser.id,
-      });
+      const jwtAccessToken = generateJwtToken(
+        {
+          userId: signedupUser.id,
+        },
+        'access'
+      );
 
       // jwt 리프레시 토큰 발급
-      const jwtRefreshToken = generateJwtRefreshToken({
-        userId: signedupUser.id,
-      });
+      const jwtRefreshToken = generateJwtToken(
+        {
+          userId: signedupUser.id,
+        },
+        'refresh'
+      );
 
       // redis에 jwt 리프레시 토큰 저장
       await storeJwtRefreshTokenInRedis(signedupUser.id, jwtRefreshToken);
@@ -247,7 +258,7 @@ const refreshJwtAccessToken = async (
   try {
     // 만료된 jwt 엑세스 토큰 검증
     try {
-      const decodedToken = verifyJwtToken(jwtAccessToken);
+      const decodedToken = verifyJwtToken(jwtAccessToken, 'access');
 
       if (decodedToken) {
         return next(
@@ -268,10 +279,10 @@ const refreshJwtAccessToken = async (
         const jwtRefreshToken = await getJwtRefreshTokenFromRedis(userId);
 
         // jwt 리프레시 토큰 검증
-        verifyJwtToken(jwtRefreshToken);
+        verifyJwtToken(jwtRefreshToken, 'refresh');
 
         // 새로운 jwt 엑세스 토큰 발급
-        const newJwtAccessToken = generateJwtAccessToken({ userId });
+        const newJwtAccessToken = generateJwtToken({ userId }, 'access');
 
         // jwt 엑세스 토큰 갱신에 성공 시
         res.status(200).json({ newJwtAccessToken });

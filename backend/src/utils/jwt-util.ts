@@ -1,46 +1,50 @@
 import jwt from 'jsonwebtoken';
 import HttpError from '../models/http-error';
 
-const jwtSecretKey = process.env.JWT_SECRET_KEY || 'default_secret_key';
-
 interface JwtPayload {
   userId: string;
 }
 
-const generateJwtAccessToken = (payload: JwtPayload) => {
-  try {
-    // jwt 엑세스 토큰 발급 (만료시간: 1시간)
-    const jwtAccessToken = jwt.sign(payload, jwtSecretKey, { expiresIn: '1h' });
-    return jwtAccessToken;
-  } catch (error) {
-    throw new HttpError(
-      'jwt 엑세스 토큰 생성에 실패했습니다.',
-      500,
-      'FAILED_GENERATION_JWT_ACCESS_TOKEN'
-    );
-  }
+type TokenType = 'access' | 'refresh';
+
+const JWT_TOKEN_CONFIG: Record<
+  TokenType,
+  { secretKey: string; expirationTime: string }
+> = {
+  access: {
+    secretKey: process.env.JWT_ACCESS_SECRET_KEY || 'default_access_secret_key',
+    expirationTime: '1h', // 만료 시간 (1시간)
+  },
+  refresh: {
+    secretKey:
+      process.env.JWT_REFRESH_SECRET_KEY || 'default_refresh_secret_key',
+    expirationTime: '7d', // 만료 시간 (7일)
+  },
 };
 
-const generateJwtRefreshToken = (payload: JwtPayload) => {
+const generateJwtToken = (payload: JwtPayload, tokenType: TokenType) => {
   try {
-    // jwt 리프레시 토큰 발급 (만료시간: 7일)
-    const jwtRefreshToken = jwt.sign(payload, jwtSecretKey, {
-      expiresIn: '7d',
+    const { secretKey, expirationTime } = JWT_TOKEN_CONFIG[tokenType];
+
+    const jwtToken = jwt.sign(payload, secretKey, {
+      expiresIn: expirationTime,
     });
-    return jwtRefreshToken;
+    return jwtToken;
   } catch (error) {
     throw new HttpError(
-      'jwt 리프레시 토큰 생성에 실패했습니다.',
+      'jwt 토큰 생성에 실패했습니다.',
       500,
-      'FAILED_GENERATION_JWT_REFRESH_TOKEN'
+      'FAILED_GENERATION_JWT_TOKEN'
     );
   }
 };
 
-const verifyJwtToken = (jwtToken: string) => {
+const verifyJwtToken = (jwtToken: string, tokenType: TokenType) => {
   try {
+    const { secretKey } = JWT_TOKEN_CONFIG[tokenType];
+
     // jwt 토큰 검증
-    const decodedToken = jwt.verify(jwtToken, jwtSecretKey);
+    const decodedToken = jwt.verify(jwtToken, secretKey);
 
     if (
       decodedToken &&
@@ -92,9 +96,4 @@ const getUserIdFromJwtAccessToken = (jwtAccessToken: string) => {
   return decodedToken.userId;
 };
 
-export {
-  generateJwtAccessToken,
-  generateJwtRefreshToken,
-  verifyJwtToken,
-  getUserIdFromJwtAccessToken,
-};
+export { generateJwtToken, verifyJwtToken, getUserIdFromJwtAccessToken };
