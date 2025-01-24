@@ -286,6 +286,8 @@ const refreshJwtAccessToken = async (
 
         // jwt 엑세스 토큰 갱신에 성공 시
         res.status(200).json({ newJwtAccessToken });
+      } else {
+        throw error;
       }
     }
   } catch (error) {
