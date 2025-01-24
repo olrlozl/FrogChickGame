@@ -37,13 +37,17 @@ const checkAuth = (req: Request, res: Response, next: NextFunction) => {
 
     return next();
   } catch (error) {
-    return next(
-      new HttpError(
-        'jwt 토큰 검증에 실패했습니다.',
-        400,
-        'FAILED_VERIFICATION_JWT_TOKEN'
-      )
-    );
+    if (error instanceof HttpError) {
+      return next(error);
+    } else {
+      return next(
+        new HttpError(
+          'jwt 토큰 검증에 실패했습니다.',
+          400,
+          'FAILED_VERIFICATION_JWT_TOKEN'
+        )
+      );
+    }
   }
 };
 export { checkAuth };
