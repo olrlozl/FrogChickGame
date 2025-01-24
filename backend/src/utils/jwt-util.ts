@@ -67,6 +67,12 @@ const verifyJwtToken = (jwtToken: string, tokenType: TokenType) => {
         401,
         'EXPIRED_JWT_TOKEN'
       );
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      throw new HttpError(
+        'jwt 토큰이 유효하지 않습니다.',
+        401,
+        'INVALID_JWT_TOKEN'
+      );
     } else {
       throw new HttpError(
         'jwt 토큰 검증에 실패했습니다.',
