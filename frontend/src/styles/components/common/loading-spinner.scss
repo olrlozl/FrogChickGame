@@ -1,0 +1,10 @@
+@import 'styles/abstracts/variables';
+@import 'styles/abstracts/mixins';
+@import 'styles/abstracts/fonts';
+
+.loading-spinner {
+  img {
+    @include absolute-center;
+    z-index: 1000;
+  }
+}
