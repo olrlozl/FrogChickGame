@@ -42,7 +42,8 @@
       text-align: center;
       line-height: 1;
       margin-bottom: 20px;
-
+      white-space: pre-wrap;
+      
       &.font-xl {
         font-size: $font-xl;
       }
