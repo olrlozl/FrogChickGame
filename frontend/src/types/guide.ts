@@ -1,1 +1,1 @@
-export type GuideOptionType = 'rule' | 'control';
+export type GuideOption = 'rule' | 'control';
