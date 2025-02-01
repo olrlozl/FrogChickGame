@@ -20,7 +20,6 @@ import { useErrorStore } from 'stores/errorStore';
 const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
   { path: '/play', element: <PlayPage />, loader: checkAuthLoader },
-  { path: '/auth', element: <LandingPage /> },
   {
     path: '/main',
     element: <MainLayout />,
