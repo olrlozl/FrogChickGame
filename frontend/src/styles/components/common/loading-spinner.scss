@@ -3,6 +3,10 @@
 @import 'styles/abstracts/fonts';
 
 .loading-spinner {
+  &.disabled {
+    display: none;
+  }
+
   img {
     @include absolute-center;
     z-index: 1000;

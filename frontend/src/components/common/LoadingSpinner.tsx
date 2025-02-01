@@ -12,13 +12,12 @@ const LoadingSpinner = () => {
   const isLogoutMutating = useIsMutating({
     mutationKey: [MUTATIONS_KEYS.logout],
   });
-  const display =
-    isFetching + isLoginMutating + isLogoutMutating > 0 ? 'inherit' : 'none';
+  const isLoading = !!(isFetching || isLoginMutating || isLogoutMutating);
 
   return (
-    <div className="loading-spinner" style={{ display }}>
+    <div className={`loading-spinner ${isLoading ? undefined : 'disabled'}`}>
       <OverLay />
-      <img src={loading} alt='로딩 스피너' />
+      <img src={loading} alt="로딩 스피너" />
     </div>
   );
 };
