@@ -12,6 +12,11 @@ instance.interceptors.request.use(
     if (jwtAccessToken) {
       config.headers.Authorization = `Bearer ${jwtAccessToken}`;
     }
+
+    if (config.data) {
+      config.headers['Content-Type'] = 'application/json';
+    }
+
     return config;
   },
   (err) => {
