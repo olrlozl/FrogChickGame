@@ -22,10 +22,6 @@ export interface KakaoLoginParams {
   code: string;
 }
 
-export interface CreateUserParams {
-  nickname: string;
-}
-
 export interface CreateUserResponse {
   jwtAccessToken: string;
 }
