@@ -44,7 +44,7 @@ const createUser = async ({
 };
 
 const refreshJwtAccessToken = async (
-  jwtAccessToken: string
+  authorization: string
 ): Promise<refreshJwtAccessTokenResponse> => {
   const { data } = await axios.post(
     process.env.REACT_APP_API_URL_DEV +
@@ -53,7 +53,7 @@ const refreshJwtAccessToken = async (
     {},
     {
       headers: {
-        Authorization: jwtAccessToken,
+        Authorization: authorization,
       },
     }
   );
