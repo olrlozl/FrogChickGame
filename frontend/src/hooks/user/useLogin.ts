@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { kakaoLogin } from 'api/userApi';
+import { MUTATION_KEYS, QUERY_KEYS } from 'constants/reactQueryKeys';
 import { useNavigate } from 'react-router-dom';
 import { useErrorStore } from 'stores/errorStore';
 import { SetState } from 'types/common';
@@ -15,7 +16,7 @@ export const useLogin = (
 
   const { mutate: executeKakaoLogin } = useMutation({
     mutationFn: kakaoLogin,
-    mutationKey: ['login'],
+    mutationKey: [MUTATION_KEYS.login],
     onSuccess: (tokens) => {
       // 이미 가입한 유저
       if (tokens.jwtAccessToken) {
