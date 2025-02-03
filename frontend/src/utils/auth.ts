@@ -1,17 +1,11 @@
-import { queryClient } from 'api/queryClient';
+import { redirect } from 'react-router-dom';
 
 export const checkAuthLoader = () => {
   const jwtAccessToken = localStorage.getItem('jwtAccessToken');
 
   if (!jwtAccessToken) {
-    window.location.href = '/';
+    return redirect('/');
   }
 
   return null;
-};
-
-export const clearAndRedirectToLanding = () => {
-  localStorage.clear();
-  queryClient.clear();
-  window.location.href = '/'
 };
