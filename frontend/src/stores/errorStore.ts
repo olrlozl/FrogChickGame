@@ -11,6 +11,7 @@ type ErrorStoreActions = {
 }
 
 type ErrorStore = ErrorStoreState & ErrorStoreActions
+
 export const useErrorStore = create<ErrorStore>()(
   devtools(
     (set) => ({
