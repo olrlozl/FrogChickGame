@@ -1,7 +1,6 @@
 import {
   RouterProvider,
   createBrowserRouter,
-  useNavigate,
 } from 'react-router-dom';
 import './App.css';
 import LandingPage from 'pages/LandingPage';
@@ -66,6 +65,8 @@ function App() {
       ? clearAndNavigateToLanding
       : clearErrorMessage;
 
+  const { btns } = modalProps.error;
+
   return (
     <div className="App">
       <QueryClientProvider client={queryClient}>
@@ -74,14 +75,8 @@ function App() {
         <Modal
           isOpen={!!errorMessage}
           message={errorMessage}
-          messageFontSize={modalProps.error.messageFontSize}
-          btns={[
-            {
-              label: modalProps.error.btns[0].label,
-              onClick: handleClickModalAction,
-              type: modalProps.error.btns[0].type,
-            },
-          ]}
+          btns={btns}
+          buttonActions={[handleClickModalAction]}
         />
         <ReactQueryDevtools />
       </QueryClientProvider>

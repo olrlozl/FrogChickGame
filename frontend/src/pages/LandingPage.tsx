@@ -15,7 +15,7 @@ const LandingPage = () => {
   const [kakaoAccessToken, setKakaoAccessToken] = useState('');
   const [nicknameErrorMessage, setNicknameErrorMessage] = useState('');
   const [nickname, setNickname] = useState('');
-  const { message, messageFontSize, btns } = modalProps.createNickname;
+  const { message, btns } = modalProps.createNickname;
 
   // 1. 카카오 버튼 처음 눌렀을 때
   const code = new URL(window.location.href).searchParams.get('code');
@@ -47,20 +47,17 @@ const LandingPage = () => {
       <Modal
         isOpen={isModalOpen}
         message={message}
-        messageFontSize={messageFontSize}
-        hasNicknameInput={true}
-        nickname={nickname}
-        setNickname={setNickname}
-        btns={[
-          {
-            label: btns[0].label,
-            onClick: validateAndCreateUser,
-            type: btns[0].type,
-          },
-        ]}
-        errorMessage={nicknameErrorMessage}
-        setErrorMessage={setNicknameErrorMessage}
-      />
+        btns={btns}
+        buttonActions={[validateAndCreateUser]}
+      >
+        <Modal.NicknameInput
+          text="한글, 영어 2~6자"
+          nickname={nickname}
+          setNickname={setNickname}
+          setErrorMessage={setNicknameErrorMessage}
+        />
+        <Modal.ErrorMessage errorMessage={nicknameErrorMessage} />
+      </Modal>
     </div>
   );
 };
