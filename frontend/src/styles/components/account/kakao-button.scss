@@ -1,0 +1,32 @@
+@import 'styles/abstracts/mixins';
+@import 'styles/abstracts/variables';
+@import 'styles/abstracts/fonts';
+
+.kakao-button {
+  @include flex-center;
+  background-color: #FEE500;
+  width: 95%;
+  min-height: 50px;
+  box-shadow: 3px 3px 4px rgba(0,0, 0, 0.25);
+  border-radius: 12px;
+  padding: 0px 5px;
+  cursor: pointer;
+
+  .content-box {
+    @include flex-center;
+    max-height: 33%;
+    gap: 10px;
+
+    img {
+      width: 24px;
+      aspect-ratio: 1/1;  
+    }
+
+    span {
+      font-size: $font-sm;
+      // windows, ios & macOS, android 기본서체
+      font-family: 'Segoe UI', 'San Francisco', 'Roboto';
+      color: rgba(0,0, 0, 0.85);
+    }
+  }
+}

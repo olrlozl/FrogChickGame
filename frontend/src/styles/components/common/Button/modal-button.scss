@@ -1,7 +1,9 @@
 @import 'styles/abstracts/variables';
 @import 'styles/abstracts/fonts';
+@import 'styles/abstracts/mixins';
 
 .modal-button {
+  @include flex-center;
   font-family: 'ButtonFont';
   cursor: pointer;
   font-size: 25px;

@@ -1,9 +1,9 @@
 import 'styles/components/guide/guide-balloon.scss';
-import { GuideOptionType } from 'types/guide';
+import { GuideOption } from 'types/guide';
 
 interface GuideBalloonProps {
-  guideOption: GuideOptionType;
-  onClick: (nextOption: GuideOptionType) => void;
+  guideOption: GuideOption;
+  onClick: (nextOption: GuideOption) => void;
 }
 
 const GuideBalloon = ({ guideOption, onClick }: GuideBalloonProps) => {

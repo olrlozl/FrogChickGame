@@ -3,14 +3,19 @@ import ModalButton from 'components/common/Button/ModalButton';
 import 'styles/components/common/Modal/modal.scss';
 import NicknameInput from 'components/user/NicknameInput';
 import OverLay from 'components/common/Modal/OverLay';
+import { ButtonType, MessageFontSize, SetState } from 'types/common';
 
 interface ModalProps {
   isOpen: boolean;
   imageSrc?: string;
   message: string;
-  messageFontSize?: 'font-xl' | 'font-md';
+  messageFontSize?: MessageFontSize;
   hasNicknameInput?: boolean;
-  btns: { label: string; onClick: () => void; type: 'primary' | 'secondary' }[];
+  nickname?: string;
+  setNickname?: SetState<string>;
+  errorMessage?: string;
+  setErrorMessage? : SetState<string>;
+  btns: { label: string; onClick: () => void; type: ButtonType }[];
 }
 
 const Modal = ({
@@ -19,6 +24,10 @@ const Modal = ({
   message,
   messageFontSize,
   hasNicknameInput = false,
+  nickname,
+  setNickname,
+  errorMessage,
+  setErrorMessage,
   btns,
 }: ModalProps) => {
   if (!isOpen) return null;
@@ -31,10 +40,10 @@ const Modal = ({
           <img className="image" src={imageSrc} alt="Modal Visual" />
         )}
         <div className={`message ${messageFontSize}`}>{message}</div>
-        {hasNicknameInput && (
+        {hasNicknameInput && nickname != undefined && setNickname && setErrorMessage && (
           <div className="nickname-input">
-            <NicknameInput text="한글, 영어 2~6자" />
-            <div className="error-message">이미 사용중인 닉네임입니다.</div>
+            <NicknameInput text="한글, 영어 2~6자" nickname={nickname} setNickname={setNickname} setErrorMessage={setErrorMessage}/>
+            <div className="error-message">{errorMessage}</div>
           </div>
         )}
         <div className="buttons">

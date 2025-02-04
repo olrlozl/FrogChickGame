@@ -18,7 +18,8 @@ export default [
   {
     extends: [
       'plugin:prettier/recommended',  // Prettier와 ESLint의 통합 규칙
-      'prettier'                      // Prettier 규칙을 ESLint 규칙과 병합
+      'prettier',                      // Prettier 규칙을 ESLint 규칙과 병합
+      'plugin:@tanstack/query/recommended'
     ],
     plugins: ['prettier'],  // Prettier 플러그인 추가
     rules: {
