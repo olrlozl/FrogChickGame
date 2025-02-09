@@ -13,7 +13,7 @@ import { useLogout } from 'hooks/user/useLogout';
 const GuidePage = () => {
   const [selectedOption, setSelectedOption] = useState<GuideOption>('rule');
   const { isModalOpen, openModal, closeModal } = useModal();
-  const { message, messageFontSize, btns } = modalProps.logoutConfirm;
+  const { message, btns } = modalProps.logoutConfirm;
 
   const guideImage = selectedOption === 'rule' ? pond : farmer;
 
@@ -35,19 +35,8 @@ const GuidePage = () => {
       <Modal
         isOpen={isModalOpen}
         message={message}
-        messageFontSize={messageFontSize}
-        btns={[
-          {
-            label: btns[0].label,
-            onClick: executeKakaoLogout,
-            type: btns[0].type,
-          },
-          {
-            label: btns[1].label,
-            onClick: closeModal,
-            type: btns[1].type,
-          },
-        ]}
+        btns={btns}
+        buttonActions={[executeKakaoLogout, closeModal]}
       />
     </div>
   );

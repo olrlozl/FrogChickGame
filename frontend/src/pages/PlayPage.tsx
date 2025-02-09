@@ -6,6 +6,7 @@ import UserPlayBox from 'components/play/UserPlayBox';
 import CharacterList from 'components/play/CharacterList';
 import Board from 'components/play/Board';
 import Count from 'components/play/Count';
+import { modalProps } from 'constants/modal';
 
 const PlayPage = () => {
   //// [Modal 사용예시]
@@ -26,6 +27,8 @@ const PlayPage = () => {
   const handleStartCountEnd = () => {
     setStartCountVisible(false);
   };
+
+  const { messageFontSize, btns } = modalProps.gameResult;
 
   interface GameInfo {
     option: {
@@ -74,14 +77,13 @@ const PlayPage = () => {
 
       <Modal
         isOpen={isModalOpen}
-        imageSrc={eggwin}
-        message="아리 승!"
-        messageFontSize="font-xl"
-        btns={[
-          { label: '재대결', onClick: rematch, type: 'primary' },
-          { label: '나가기', onClick: closeModal, type: 'secondary' },
-        ]}
-      />
+        message="아리 승!" // 추후 동적으로 입력할 값
+        messageFontSize={messageFontSize}
+        btns={btns}
+        buttonActions={[rematch, closeModal]}
+      >
+        <Modal.Image imageSrc={eggwin} />
+      </Modal>
     </div>
   );
 };
