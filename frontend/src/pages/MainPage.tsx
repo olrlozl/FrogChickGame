@@ -8,14 +8,16 @@ const MainPage = () => {
   const [selectedOption, setSelectedOption] = useState<GameOptionType>('friend');
 
   const handleClickChangeOption = (nextGameOption: GameOptionType) => {
-    setSelectedOption(nextGameOption);
+    if (selectedOption !== nextGameOption) {
+      setSelectedOption(nextGameOption);
+    }
   }
 
   return (
     <div className='main-page'>
       <div className='start-button-box'>
-        <StartButton gameOption='stranger' onClick={() => handleClickChangeOption('friend')} isSelected={selectedOption === 'stranger'} />
-        <StartButton gameOption='friend' onClick={() => handleClickChangeOption('stranger')} isSelected={selectedOption === 'friend'}/>
+        <StartButton gameOption='stranger' onClick={() => handleClickChangeOption('stranger')} isSelected={selectedOption === 'stranger'} />
+        <StartButton gameOption='friend' onClick={() => handleClickChangeOption('friend')} isSelected={selectedOption === 'friend'}/>
       </div>
       <Balloon gameOption={selectedOption}/>
     </div>
