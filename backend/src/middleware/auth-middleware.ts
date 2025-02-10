@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-const checkAuth = (req: Request, res: Response, next: NextFunction) => {
+const checkAuth = async (req: Request, res: Response, next: NextFunction) => {
   if (req.method === 'OPTIONS') {
     return next();
   }
@@ -30,7 +30,7 @@ const checkAuth = (req: Request, res: Response, next: NextFunction) => {
 
   try {
     // jwt 엑세스 토큰 검증
-    const decodedToken = verifyJwtToken(jwtAccessToken, 'access');
+    const decodedToken = await verifyJwtToken(jwtAccessToken, 'access');
 
     // 요청 객체(req)의 userId 속성에 디코딩된 토큰의 userId를 저장하여 이후 미들웨어에서 사용 가능하도록 설정
     req.userId = (decodedToken as JwtPayload).userId;

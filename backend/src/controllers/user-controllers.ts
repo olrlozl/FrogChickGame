@@ -85,10 +85,16 @@ const createNickname = async (
     await user.save();
 
     // jwt 엑세스 토큰 발급
-    const jwtAccessToken = generateJwtToken({ userId: user.id }, 'access');
+    const jwtAccessToken = generateJwtToken(
+      { userId: user.id, revokedAt: user.revokedAt },
+      'access'
+    );
 
     // jwt 리프레시 토큰 발급
-    const jwtRefreshToken = generateJwtToken({ userId: user.id }, 'refresh');
+    const jwtRefreshToken = generateJwtToken(
+      { userId: user.id, revokedAt: user.revokedAt },
+      'refresh'
+    );
 
     // redis에 jwt 리프레시 토큰 저장
     await storeJwtRefreshTokenInRedis(user.id, jwtRefreshToken);
@@ -145,6 +151,7 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       const jwtAccessToken = generateJwtToken(
         {
           userId: signedupUser.id,
+          revokedAt: signedupUser.revokedAt,
         },
         'access'
       );
@@ -153,6 +160,7 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       const jwtRefreshToken = generateJwtToken(
         {
           userId: signedupUser.id,
+          revokedAt: signedupUser.revokedAt,
         },
         'refresh'
       );
@@ -292,6 +300,11 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
     // redis에서 jwt 리프레시 토큰 삭제
     await removeJwtRefreshTokenFromRedis(userId);
 
+    // revokedAt 필드 현재 시간으로 갱신
+    await User.findByIdAndUpdate(userId, {
+      revokedAt: new Date(),
+    });
+
     // 카카오 로그아웃 성공 시
     res.status(204).send();
   } catch (error) {
@@ -329,7 +342,7 @@ const refreshJwtAccessToken = async (
   try {
     // 만료된 jwt 엑세스 토큰 검증
     try {
-      const decodedToken = verifyJwtToken(jwtAccessToken, 'access');
+      const decodedToken = await verifyJwtToken(jwtAccessToken, 'access');
 
       if (decodedToken) {
         return next(
@@ -346,6 +359,16 @@ const refreshJwtAccessToken = async (
         // 만료된 jwt 엑세스 토큰의 payload에서 userId 추출
         const userId = getUserIdFromJwtAccessToken(jwtAccessToken);
 
+        // userId에 해당하는 사용자 조회
+        const user = await User.findById(userId);
+
+        // userId에 해당하는 사용자가 없을 경우
+        if (!user) {
+          return next(
+            new HttpError('사용자를 찾을 수 없습니다.', 404, 'NOT_FOUND_USER')
+          );
+        }
+
         // redis에서 jwt 리프레시 토큰 조회
         const jwtRefreshToken = await getJwtRefreshTokenFromRedis(userId);
 
@@ -353,7 +376,10 @@ const refreshJwtAccessToken = async (
         verifyJwtToken(jwtRefreshToken, 'refresh');
 
         // 새로운 jwt 엑세스 토큰 발급
-        const newJwtAccessToken = generateJwtToken({ userId }, 'access');
+        const newJwtAccessToken = generateJwtToken(
+          { userId, revokedAt: user.revokedAt },
+          'access'
+        );
 
         // jwt 엑세스 토큰 갱신에 성공 시
         res.status(200).json({ newJwtAccessToken });

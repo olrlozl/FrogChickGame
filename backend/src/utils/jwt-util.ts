@@ -1,10 +1,13 @@
 import jwt from 'jsonwebtoken';
 import HttpError from '../models/http-error';
 import { TokenType } from '../types/token';
+import User from '../models/user';
 
 interface JwtPayload {
   userId: string;
+  revokedAt: Date;
 }
+
 const JWT_TOKEN_CONFIG: Record<
   TokenType,
   { secretKey: string; expirationTime: string }
@@ -37,7 +40,7 @@ const generateJwtToken = (payload: JwtPayload, tokenType: TokenType) => {
   }
 };
 
-const verifyJwtToken = (jwtToken: string, tokenType: TokenType) => {
+const verifyJwtToken = async (jwtToken: string, tokenType: TokenType) => {
   try {
     const { secretKey } = JWT_TOKEN_CONFIG[tokenType];
 
@@ -47,8 +50,35 @@ const verifyJwtToken = (jwtToken: string, tokenType: TokenType) => {
     if (
       decodedToken &&
       typeof decodedToken === 'object' &&
-      'userId' in decodedToken
+      'userId' in decodedToken &&
+      'revokedAt' in decodedToken
     ) {
+      // decodedToken에서 userId와 revokedAt을 추출
+      const { userId, revokedAt: tokenRevokedAt } = decodedToken;
+
+      // userId에 해당하는 사용자의 revokedAt 필드만 조회
+      const user = await User.findById(userId).select('revokedAt');
+
+      if (!user) {
+        throw new HttpError(
+          '사용자를 찾을 수 없습니다.',
+          404,
+          'USER_NOT_FOUND'
+        );
+      }
+
+      // 토큰의 revokedAt보다 DB의 revokedAt가 더 최신일 경우 토큰 무효화
+      if (
+        user.revokedAt &&
+        new Date(user.revokedAt) > new Date(tokenRevokedAt)
+      ) {
+        throw new HttpError(
+          '이 토큰은 로그아웃된 사용자에 의한 것이므로 더 이상 유효하지 않습니다.',
+          401,
+          'REVOKED_JWT_TOKEN'
+        );
+      }
+
       return decodedToken;
     } else {
       throw new HttpError(
@@ -71,6 +101,8 @@ const verifyJwtToken = (jwtToken: string, tokenType: TokenType) => {
         401,
         'INVALID_JWT_TOKEN'
       );
+    } else if (error instanceof HttpError) {
+      throw error;
     } else {
       throw new HttpError(
         'jwt 토큰 검증에 실패했습니다.',
