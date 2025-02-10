@@ -1,9 +1,9 @@
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import userRouter from './routes/user-routes';
-import rankRouter from './routes/rank-routes';
-import playRouter from './routes/play-routes';
+import userRouter from './routes/user-route';
+import rankRouter from './routes/rank-route';
+import playRouter from './routes/play-route';
 import HttpError from './models/http-error';
 
 const app = express();
