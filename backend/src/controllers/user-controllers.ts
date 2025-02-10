@@ -2,9 +2,9 @@ import HttpError from '../models/http-error';
 import User from '../models/user';
 import {
   getKakaoTokens,
-  getUserKakaoId,
+  getKakaoTokenInfo,
   logoutKakao,
-  storeKakaoAccessTokenInRedis,
+  storeKakaoTokenInRedis,
   getKakaoAccessTokenFromRedis,
   removeKakaoAccessTokenFromRedis,
   storeJwtRefreshTokenInRedis,
@@ -115,30 +115,31 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       new HttpError(
         'redirectUri가 올바르지 않습니다.',
         400,
-        'INVALID_REDIRECT_URI'
+        'MISSING_REDIRECT_URI'
       )
     );
   }
   if (!code) {
-    return next(
-      new HttpError('code가 올바르지 않습니다.', 400, 'INVALID_CODE')
-    );
+    return next(new HttpError('code가 필요합니다.', 400, 'MISSING_CODE'));
   }
 
   try {
     // 카카오 API에서 인가 코드로 액세스 토큰과 리프레시 토큰 받기
-    const { kakaoAccessToken, kakaoRefreshToken } = await getKakaoTokens(
-      redirectUri,
-      code
-    );
+    const {
+      kakaoAccessToken,
+      kakaoRefreshToken,
+      kakaoAccessTokenExpirationTime,
+      kakaoRefreshTokenExpirationTime,
+    } = await getKakaoTokens(redirectUri, code);
 
-    // 카카오 API에서 사용자 카카오 ID 가져오기
-    const kakaoId = await getUserKakaoId(kakaoAccessToken);
+    // 카카오 API에서 카카오 ID 조회
+    const { kakaoId } = await getKakaoTokenInfo(kakaoAccessToken);
 
     // 이미 가입한 사용자인지 확인
     const signedupUser = await User.findOne({ kakaoId });
 
-    if (signedupUser) {
+    // 1. 이미 가입했고, 닉네임도 있는 경우 => jwt 토큰 발급 후 반환
+    if (signedupUser && signedupUser.nickname) {
       // jwt 엑세스 토큰 발급
       const jwtAccessToken = generateJwtToken(
         {
@@ -159,18 +160,62 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       await storeJwtRefreshTokenInRedis(signedupUser.id, jwtRefreshToken);
 
       // redis에 카카오 액세스 토큰 저장
-      await storeKakaoAccessTokenInRedis(signedupUser.id, kakaoAccessToken);
+      await storeKakaoTokenInRedis(
+        signedupUser.id,
+        kakaoAccessToken,
+        kakaoAccessTokenExpirationTime,
+        'access'
+      );
 
-      // 카카오 로그인에 성공 시 (이미 가입한 사용자일 경우)
+      // redis에 카카오 리프레시 토큰 저장
+      await storeKakaoTokenInRedis(
+        signedupUser.id,
+        kakaoRefreshToken,
+        kakaoRefreshTokenExpirationTime,
+        'refresh'
+      );
+
+      // 카카오 로그인 성공 응답 (닉네임 이미 있는 경우)
       res.status(200).json({
         jwtAccessToken,
-        kakaoAccessToken: null,
       });
-    } else {
-      // 카카오 로그인에 성공 시 (미가입 사용자일 경우)
+    }
+    // 2. 이미 가입했지만, 닉네임이 없는 경우 => userId 반환
+    else if (signedupUser && !signedupUser.nickname) {
+      // 카카오 로그인 성공 응답 (닉네임 없는 경우)
       res.status(200).json({
-        jwtAccessToken: null,
+        userId: signedupUser.id,
+      });
+    }
+    // 3. 최초 로그인한 신규 회원일 경우 => 사용자 생성 후, userId 반환
+    else {
+      // 새로운 사용자 생성
+      const createdUser = new User({
+        kakaoId,
+      });
+
+      // 사용자 정보 저장
+      await createdUser.save();
+
+      // redis에 카카오 액세스 토큰 저장
+      await storeKakaoTokenInRedis(
+        createdUser.id,
         kakaoAccessToken,
+        kakaoAccessTokenExpirationTime,
+        'access'
+      );
+
+      // redis에 카카오 리프레시 토큰 저장
+      await storeKakaoTokenInRedis(
+        createdUser.id,
+        kakaoRefreshToken,
+        kakaoRefreshTokenExpirationTime,
+        'refresh'
+      );
+
+      // 카카오 로그인 성공 응답 (닉네임 없는 경우)
+      res.status(200).json({
+        userId: createdUser.id,
       });
     }
   } catch (error) {
