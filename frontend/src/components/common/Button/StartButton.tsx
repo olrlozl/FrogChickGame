@@ -9,19 +9,24 @@ interface StartButtonProps {
   isSelected: boolean;
 }
 
+const BUTTON_CONTENTS = {
+  stranger: { image: frog, text: '낯선이와\n게임하기' },
+  friend: { image: chick, text: '친구와\n게임하기' },
+};
+
 const StartButton = ({ gameOption, onClick, isSelected }: StartButtonProps) => {
-  const gameOptions = {
-    stranger: { image: frog, text: '낯선이와\n게임하기' },
-    friend: { image: chick, text: '친구와\n게임하기' },
-  };
-  const { image, text } = gameOptions[gameOption];
+  const { image, text } = BUTTON_CONTENTS[gameOption];
 
   return (
     <div
       className={`start-button ${gameOption} ${isSelected && 'selected'}`}
       onClick={onClick}
     >
-      <img className={gameOption} src={image} alt='구리와 아리' />
+      <img
+        className={`${gameOption} ${isSelected && 'selected'}`}
+        src={image}
+        alt="구리와 아리"
+      />
       {text}
     </div>
   );
