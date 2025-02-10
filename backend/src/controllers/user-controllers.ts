@@ -4,9 +4,10 @@ import {
   getKakaoTokens,
   getKakaoTokenInfo,
   logoutKakao,
+  refreshKakaoAccessToken,
   storeKakaoTokenInRedis,
-  getKakaoAccessTokenFromRedis,
-  removeKakaoAccessTokenFromRedis,
+  getKakaoTokenFromRedis,
+  removeKakaoTokenFromRedis,
   storeJwtRefreshTokenInRedis,
   removeJwtRefreshTokenFromRedis,
   getJwtRefreshTokenFromRedis,
@@ -245,12 +246,48 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
 
   try {
     // reids에서 카카오 액세스 토큰 조회
-    const kakaoAccessToken = await getKakaoAccessTokenFromRedis(userId);
+    let kakaoAccessToken = await getKakaoTokenFromRedis(userId, 'access');
 
+    // 카카오 엑세스 토큰이 만료되었을 경우, 갱신
+    try {
+      getKakaoTokenInfo(kakaoAccessToken);
+    } catch (error) {
+      // 카카오 엑세스 토큰이 만료된 경우!
+      if (
+        error instanceof HttpError &&
+        error.type === 'EXPIRED_KAKAO_ACCESS_TOKEN'
+      ) {
+        // reids에서 카카오 리프레시 토큰 조회
+        const kakaoRefreshToken = await getKakaoTokenFromRedis(
+          userId,
+          'refresh'
+        );
+
+        // 카카오 엑세스 토큰 갱신
+        const { newKakaoAccessToken, newKakaoAccessTokenExpirationTime } =
+          await refreshKakaoAccessToken(kakaoRefreshToken);
+
+        // redis에 새로운 카카오 액세스 토큰 저장
+        await storeKakaoTokenInRedis(
+          userId,
+          newKakaoAccessToken,
+          newKakaoAccessTokenExpirationTime,
+          'access'
+        );
+
+        // 새로운 카카오 엑세스 토큰 할당
+        kakaoAccessToken = newKakaoAccessToken;
+      }
+    }
+
+    // 카카오 로그아웃
     await logoutKakao(kakaoAccessToken);
 
     // redis에서 카카오 액세스 토큰 삭제
-    await removeKakaoAccessTokenFromRedis(userId);
+    await removeKakaoTokenFromRedis(userId, 'access');
+
+    // redis에서 카카오 리프레시 토큰 삭제
+    await removeKakaoTokenFromRedis(userId, 'refresh');
 
     // redis에서 jwt 리프레시 토큰 삭제
     await removeJwtRefreshTokenFromRedis(userId);
