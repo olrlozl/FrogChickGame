@@ -15,6 +15,7 @@ interface IUser extends Document {
     sent: mongoose.Types.ObjectId[];
     received: mongoose.Types.ObjectId[];
   };
+  revokedAt: Date;
 }
 
 const userSchema = new Schema<IUser>({
@@ -50,6 +51,7 @@ const userSchema = new Schema<IUser>({
       default: [],
     },
   },
+  revokedAt: { type: Date, required: true, default: new Date(0) }, // 기본값(1970-01-01)이면 로그아웃한 적 없는 상태
 });
 
 const User = mongoose.model<IUser>('User', userSchema);
