@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 import dotenv from 'dotenv';
 import HttpError from '../models/http-error';
 import redisClient from '../config/redis-client';
+import { TokenType } from '../types/token';
 
 dotenv.config();
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
@@ -135,8 +136,6 @@ const refreshKakaoAccessToken = async (kakaoRefreshToken: string) => {
     );
   }
 };
-
-type TokenType = 'access' | 'refresh';
 
 // Redis에 카카오 토큰 저장
 const storeKakaoTokenInRedis = async (

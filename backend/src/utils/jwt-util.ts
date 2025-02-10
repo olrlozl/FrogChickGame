@@ -1,12 +1,10 @@
 import jwt from 'jsonwebtoken';
 import HttpError from '../models/http-error';
+import { TokenType } from '../types/token';
 
 interface JwtPayload {
   userId: string;
 }
-
-type TokenType = 'access' | 'refresh';
-
 const JWT_TOKEN_CONFIG: Record<
   TokenType,
   { secretKey: string; expirationTime: string }
