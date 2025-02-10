@@ -136,54 +136,76 @@ const refreshKakaoAccessToken = async (kakaoRefreshToken: string) => {
   }
 };
 
-// Redis에 카카오 엑세스 토큰 저장
-const storeKakaoAccessTokenInRedis = async (
+type TokenType = 'access' | 'refresh';
+
+// Redis에 카카오 토큰 저장
+const storeKakaoTokenInRedis = async (
   userId: string,
-  kakaoAccessToken: string
+  kakaoToken: string,
+  kakaoTokenExpirationTime: number,
+  tokenType: TokenType
 ) => {
+  const key =
+    tokenType === 'access'
+      ? `kakaoAccessToken:${userId}`
+      : `kakaoRefreshToken:${userId}`;
+
   try {
-    await redisClient.set(`kakaoAccessToken:${userId}`, kakaoAccessToken, {
-      EX: 3600, // 1시간 후 만료
+    await redisClient.set(key, kakaoToken, {
+      EX: kakaoTokenExpirationTime,
     });
   } catch (error) {
     throw new HttpError(
-      'Redis에 카카오 액세스 토큰 저장에 실패했습니다.',
+      'Redis에 카카오 토큰 저장에 실패했습니다.',
       500,
-      'FAILED_STORE_KAKAO_ACCESS_TOKEN'
+      'FAILED_STORE_KAKAO_TOKEN'
     );
   }
 };
 
-// Redis에서 카카오 엑세스 토큰 조회
-const getKakaoAccessTokenFromRedis = async (userId: string) => {
+// Redis에서 카카오 토큰 조회
+const getKakaoTokenFromRedis = async (userId: string, tokenType: TokenType) => {
+  const key =
+    tokenType === 'access'
+      ? `kakaoAccessToken:${userId}`
+      : `kakaoRefreshToken:${userId}`;
+
   try {
-    const token = await redisClient.get(`kakaoAccessToken:${userId}`);
+    const token = await redisClient.get(key);
     if (!token) {
       throw new HttpError(
-        '해당 사용자의 카카오 액세스 토큰을 찾을 수 없습니다.',
+        '해당 사용자의 카카오 토큰을 찾을 수 없습니다.',
         404,
-        'NOT_FOUND_KAKAO_ACCESS_TOKEN'
+        'NOT_FOUND_KAKAO_TOKEN'
       );
     }
     return token;
   } catch (error) {
     throw new HttpError(
-      'Redis에서 카카오 액세스 토큰 조회에 실패했습니다.',
+      'Redis에서 카카오 토큰 조회에 실패했습니다.',
       500,
-      'FAILED_GET_KAKAO_ACCESS_TOKEN'
+      'FAILED_GET_KAKAO_TOKEN'
     );
   }
 };
 
-// Redis에서 카카오 엑세스 토큰 제거
-const removeKakaoAccessTokenFromRedis = async (userId: string) => {
+// Redis에서 카카오 토큰 제거
+const removeKakaoTokenFromRedis = async (
+  userId: string,
+  tokenType: TokenType
+) => {
+  const key =
+    tokenType === 'access'
+      ? `kakaoAccessToken:${userId}`
+      : `kakaoRefreshToken:${userId}`;
+
   try {
-    await redisClient.del(`kakaoAccessToken:${userId}`);
+    await redisClient.del(key);
   } catch (error) {
     throw new HttpError(
-      'Redis에서 카카오 엑세스 토큰 제거에 실패했습니다.',
+      'Redis에서 카카오 토큰 제거에 실패했습니다.',
       500,
-      'FAILED_REMOVE_KAKAO_ACCESS_TOKEN'
+      'FAILED_REMOVE_KAKAO_TOKEN'
     );
   }
 };
@@ -245,9 +267,9 @@ export {
   getKakaoTokenInfo,
   logoutKakao,
   refreshKakaoAccessToken,
-  storeKakaoAccessTokenInRedis,
-  getKakaoAccessTokenFromRedis,
-  removeKakaoAccessTokenFromRedis,
+  storeKakaoTokenInRedis,
+  getKakaoTokenFromRedis,
+  removeKakaoTokenFromRedis,
   storeJwtRefreshTokenInRedis,
   getJwtRefreshTokenFromRedis,
   removeJwtRefreshTokenFromRedis,
