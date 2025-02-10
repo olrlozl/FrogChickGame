@@ -20,10 +20,10 @@ interface IUser extends Document {
 const userSchema = new Schema<IUser>({
   nickname: {
     type: String,
-    required: true,
     unique: true,
     minlength: 2,
     maxlength: 6,
+    default: null,
   },
   kakaoId: { type: Number, required: true, unique: true },
   socketId: { type: String, unique: true },
