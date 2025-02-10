@@ -103,6 +103,39 @@ const logoutKakao = async (kakaoAccessToken: string) => {
   }
 };
 
+// 카카오 엑세스 토큰 갱신하기
+const refreshKakaoAccessToken = async (kakaoRefreshToken: string) => {
+  try {
+    const response = await axios.post(
+      'https://kauth.kakao.com/oauth/token',
+      null,
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+        },
+        params: {
+          grant_type: 'refresh_token',
+          client_id: KAKAO_REST_API_KEY,
+          refresh_token: kakaoRefreshToken,
+        },
+      }
+    );
+
+    const { access_token, expires_in } = response.data;
+
+    return {
+      newKakaoAccessToken: access_token,
+      newKakaoAccessTokenExpirationTime: expires_in,
+    };
+  } catch (error) {
+    throw new HttpError(
+      '카카오 엑세스 토큰 갱신 실패했습니다.',
+      500,
+      'FAILED_REFRESH_KAKAO_ACCESS_TOKEN'
+    );
+  }
+};
+
 // Redis에 카카오 엑세스 토큰 저장
 const storeKakaoAccessTokenInRedis = async (
   userId: string,
@@ -211,6 +244,7 @@ export {
   getKakaoTokens,
   getKakaoTokenInfo,
   logoutKakao,
+  refreshKakaoAccessToken,
   storeKakaoAccessTokenInRedis,
   getKakaoAccessTokenFromRedis,
   removeKakaoAccessTokenFromRedis,
