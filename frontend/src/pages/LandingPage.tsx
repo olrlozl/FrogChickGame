@@ -33,9 +33,9 @@ const LandingPage = () => {
   }, [code, executeKakaoLogin]);
 
   // 3. 미가입 유저라면 닉네임 생성
-  const validateAndCreateUser = useNickname(
-    nickname,
+  const validateAndCreateNickname = useNickname(
     userId,
+    nickname,
     setNicknameErrorMessage
   );
 
@@ -48,7 +48,7 @@ const LandingPage = () => {
         isOpen={isModalOpen}
         message={message}
         btns={btns}
-        buttonActions={[validateAndCreateUser]}
+        buttonActions={[validateAndCreateNickname]}
       >
         <Modal.NicknameInput
           text="한글, 영어 2~6자"

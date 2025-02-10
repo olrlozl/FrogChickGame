@@ -20,13 +20,13 @@ export interface KakaoLoginParams {
   code: string;
 }
 
-export interface CreateUserResponse {
+export interface CreateNicknameResponse {
   jwtAccessToken: string;
 }
 
-export interface CreateUserParams {
+export interface CreateNicknameParams {
+  userId: string;
   nickname: string;
-  kakaoAccessToken: string;
 }
 
 export interface refreshJwtAccessTokenResponse {

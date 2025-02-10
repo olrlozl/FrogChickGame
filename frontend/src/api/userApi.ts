@@ -1,6 +1,6 @@
 import {
-  CreateUserParams,
-  CreateUserResponse,
+  CreateNicknameParams,
+  CreateNicknameResponse,
   HasNicknameUserkakaoLoginResponse,
   KakaoLoginParams,
   NoNicknameUserkakaoLoginResponse,
@@ -27,18 +27,13 @@ const kakaoLogout = async () => {
   await instance.post(API_ENDPOINTS.KAKAO_LOGOUT);
 };
 
-const createUser = async ({
+const createNickname = async ({
+  userId,
   nickname,
-  kakaoAccessToken,
-}: CreateUserParams): Promise<CreateUserResponse> => {
+}: CreateNicknameParams): Promise<CreateNicknameResponse> => {
   const { data } = await instance.post(
     API_ENDPOINTS.CREATE_NICKNAME,
-    { nickname },
-    {
-      headers: {
-        Authorization: `Bearer ${kakaoAccessToken}`,
-      },
-    }
+    { userId, nickname },
   );
   return data;
 };
@@ -60,4 +55,4 @@ const refreshJwtAccessToken = async (
   return data;
 };
 
-export { kakaoLogin, kakaoLogout, createUser, refreshJwtAccessToken };
+export { kakaoLogin, kakaoLogout, createNickname, refreshJwtAccessToken };
