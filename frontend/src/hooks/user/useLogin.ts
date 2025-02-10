@@ -1,13 +1,13 @@
 import { useMutation } from '@tanstack/react-query';
 import { kakaoLogin } from 'api/userApi';
-import { MUTATION_KEYS, QUERY_KEYS } from 'constants/reactQueryKeys';
+import { MUTATION_KEYS } from 'constants/reactQueryKeys';
 import { useNavigate } from 'react-router-dom';
 import { useErrorStore } from 'stores/errorStore';
 import { SetState } from 'types/common';
 import { errorHandle } from 'utils/error';
 
 export const useLogin = (
-  setKakaoAccessToken: SetState<string>,
+  setUserId: SetState<string>,
   openModal: () => void
 ) => {
   const { setErrorMessage } = useErrorStore();
@@ -17,15 +17,15 @@ export const useLogin = (
   const { mutate: executeKakaoLogin } = useMutation({
     mutationFn: kakaoLogin,
     mutationKey: [MUTATION_KEYS.login],
-    onSuccess: (tokens) => {
-      // 이미 가입한 유저
-      if (tokens.jwtAccessToken) {
-        localStorage.setItem('jwtAccessToken', tokens.jwtAccessToken);
+    onSuccess: (data) => {
+      // 닉네임 있는 유저
+      if ('jwtAccessToken' in data) {
+        localStorage.setItem('jwtAccessToken', data.jwtAccessToken);
         navigate('/main');
 
-        // 미가입 유저
-      } else if (tokens.kakaoAccessToken) {
-        setKakaoAccessToken(tokens.kakaoAccessToken);
+      // 닉네임 없는 유저
+      } else {
+        setUserId(data.userId);
         openModal();
       }
     },

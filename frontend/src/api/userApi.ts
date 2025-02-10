@@ -1,10 +1,10 @@
 import {
   CreateUserParams,
   CreateUserResponse,
+  HasNicknameUserkakaoLoginResponse,
   KakaoLoginParams,
+  NoNicknameUserkakaoLoginResponse,
   refreshJwtAccessTokenResponse,
-  SignedupUserkakaoLoginResponse,
-  UnSignedupUserkakaoLoginResponse,
 } from 'types/user';
 import instance from './axiosInstance';
 import { API_ENDPOINTS } from 'constants/apiEndpoints';
@@ -14,7 +14,7 @@ const kakaoLogin = async ({
   redirectUri,
   code,
 }: KakaoLoginParams): Promise<
-  SignedupUserkakaoLoginResponse | UnSignedupUserkakaoLoginResponse
+  HasNicknameUserkakaoLoginResponse | NoNicknameUserkakaoLoginResponse
 > => {
   const { data } = await instance.post(API_ENDPOINTS.KAKAO_LOGIN, {
     redirectUri,
@@ -32,7 +32,7 @@ const createUser = async ({
   kakaoAccessToken,
 }: CreateUserParams): Promise<CreateUserResponse> => {
   const { data } = await instance.post(
-    API_ENDPOINTS.CREATE_USER,
+    API_ENDPOINTS.CREATE_NICKNAME,
     { nickname },
     {
       headers: {

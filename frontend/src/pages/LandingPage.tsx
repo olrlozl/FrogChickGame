@@ -12,7 +12,7 @@ import { useLogin } from 'hooks/user/useLogin';
 
 const LandingPage = () => {
   const { isModalOpen, openModal } = useModal();
-  const [kakaoAccessToken, setKakaoAccessToken] = useState('');
+  const [userId, setUserId] = useState('');
   const [nicknameErrorMessage, setNicknameErrorMessage] = useState('');
   const [nickname, setNickname] = useState('');
   const { message, btns } = modalProps.createNickname;
@@ -24,7 +24,7 @@ const LandingPage = () => {
   };
 
   // 2. 리다이렉션 후 카카오 로그인 시도
-  const executeKakaoLogin = useLogin(setKakaoAccessToken, openModal);
+  const executeKakaoLogin = useLogin(setUserId, openModal);
   useEffect(() => {
     if (code) {
       const redirectUri = process.env.REACT_APP_REDIRECT_URI as string;
@@ -35,7 +35,7 @@ const LandingPage = () => {
   // 3. 미가입 유저라면 닉네임 생성
   const validateAndCreateUser = useNickname(
     nickname,
-    kakaoAccessToken,
+    userId,
     setNicknameErrorMessage
   );
 
