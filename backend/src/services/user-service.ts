@@ -6,7 +6,7 @@ import redisClient from '../config/redis-client';
 dotenv.config();
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
 
-// 인가 코드로 카카오 액세스 토큰과 카카오 리프레시 토큰 받기
+// 인가 코드로 카카오 엑세스/리프레시 토큰과 만료 시간 받기
 const getKakaoTokens = async (redirectUri: string, code: string) => {
   try {
     const response = await axios.post(
@@ -25,11 +25,22 @@ const getKakaoTokens = async (redirectUri: string, code: string) => {
       }
     );
 
-    const { access_token, refresh_token } = response.data;
-    return { kakaoAccessToken: access_token, kakaoRefreshToken: refresh_token };
+    const {
+      access_token,
+      refresh_token,
+      expires_in,
+      refresh_token_expires_in,
+    } = response.data;
+
+    return {
+      kakaoAccessToken: access_token,
+      kakaoRefreshToken: refresh_token,
+      kakaoAccessTokenExpirationTime: expires_in,
+      kakaoRefreshTokenExpirationTime: refresh_token_expires_in,
+    };
   } catch (error) {
     throw new HttpError(
-      '카카오 토큰 가져오기에 실패했습니다.',
+      '카카오 토큰 발급에 실패했습니다.',
       500,
       'FAILED_GET_KAKAO_TOKEN'
     );
