@@ -18,103 +18,92 @@ import {
   verifyJwtToken,
 } from '../utils/jwt-util';
 
-const createUser = async (req: Request, res: Response, next: NextFunction) => {
-  const kakaoAccessToken = req.headers.authorization?.split(' ')[1];
-  const { nickname } = req.body;
+const createNickname = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId, nickname } = req.body;
 
-  if (!kakaoAccessToken) {
-    const error = new HttpError(
-      '카카오 엑세스 토큰은 필수입니다.',
-      401,
-      'MISSING_KAKAO_ACCESS_TOKEN'
-    );
-    return next(error);
+  if (!userId) {
+    return next(new HttpError('userId가 필요합니다.', 400, 'MISSING_USERID'));
   }
 
   if (!nickname) {
-    const error = new HttpError(
-      '닉네임은 필수입니다.',
-      400,
-      'MISSING_NICKNAME'
+    return next(
+      new HttpError('nickname이 필요합니다.', 400, 'MISSING_NICKNAME')
     );
-    return next(error);
-  }
-
-  // 닉네임 유효성 검사
-  const nicknameRegex = /^[가-힣a-zA-Z]{2,6}$/;
-  if (!nicknameRegex.test(nickname)) {
-    const error = new HttpError(
-      '닉네임은 한글, 영어 2~6자만 입력 가능합니다.',
-      422,
-      'IVALID_NICKNAME'
-    );
-    return next(error);
   }
 
   try {
-    // 카카오 API에서 사용자 카카오 ID 가져오기
-    const kakaoId = await getUserKakaoId(kakaoAccessToken);
+    // userId에 해당하는 사용자 조회
+    const user = await User.findById(userId);
 
-    // 이미 가입한 사용자인지 확인
-    const signedupUser = await User.findOne({ kakaoId });
-
-    if (signedupUser) {
-      const error = new HttpError(
-        '이미 가입한 이력이 있습니다.',
-        409,
-        'SIGNEDUP_USER'
+    // userId에 해당하는 사용자가 없을 경우
+    if (!user) {
+      return next(
+        new HttpError('사용자를 찾을 수 없습니다.', 404, 'NOT_FOUND_USER')
       );
-      return next(error);
+    }
+
+    // 이미 닉네임이 있을 경우
+    if (user.nickname) {
+      return next(
+        new HttpError(
+          '이미 닉네임을 생성한 이력이 있습니다.',
+          409,
+          'ALREADY_EXISTS_NICKNAME'
+        )
+      );
+    }
+
+    // 닉네임 유효성 검사
+    const nicknameRegex = /^[가-힣a-zA-Z]{2,6}$/;
+    if (!nicknameRegex.test(nickname)) {
+      return next(
+        new HttpError(
+          '닉네임은 한글, 영어 2~6자만 입력 가능합니다.',
+          422,
+          'INVALID_NICKNAME'
+        )
+      );
     }
 
     // 닉네임 중복 확인
     const existingNickname = await User.findOne({ nickname });
     if (existingNickname) {
-      const error = new HttpError(
-        '이미 사용중인 닉네임입니다.',
-        409,
-        'DUPLICATED_NICKNAME'
+      return next(
+        new HttpError('이미 사용중인 닉네임입니다.', 409, 'DUPLICATED_NICKNAME')
       );
-      return next(error);
     }
 
-    // 새로운 사용자 생성
-    const createdUser = new User({
-      nickname,
-      kakaoId,
-    });
+    // 닉네임 지정
+    user.nickname = nickname;
 
     // 사용자 정보 저장
-    await createdUser.save();
+    await user.save();
 
     // jwt 엑세스 토큰 발급
-    const jwtAccessToken = generateJwtToken(
-      { userId: createdUser.id },
-      'access'
-    );
+    const jwtAccessToken = generateJwtToken({ userId: user.id }, 'access');
 
     // jwt 리프레시 토큰 발급
-    const jwtRefreshToken = generateJwtToken(
-      { userId: createdUser.id },
-      'refresh'
-    );
+    const jwtRefreshToken = generateJwtToken({ userId: user.id }, 'refresh');
 
     // redis에 jwt 리프레시 토큰 저장
-    await storeJwtRefreshTokenInRedis(createdUser.id, jwtRefreshToken);
+    await storeJwtRefreshTokenInRedis(user.id, jwtRefreshToken);
 
-    // redis에 카카오 액세스 토큰 저장
-    await storeKakaoAccessTokenInRedis(createdUser.id, kakaoAccessToken);
-
-    // 유저 생성 성공 시
-    res.status(201).json({ jwtAccessToken });
+    // 닉네임 생성 성공 응답
+    res.status(201).json({
+      jwtAccessToken,
+    });
   } catch (error) {
-    if (error instanceof HttpError) {
-      return next(error);
-    } else {
-      return next(
-        new HttpError('유저 생성에 실패했습니다.', 400, 'FAILED_CREATE_USER')
-      );
-    }
+    return next(
+      new HttpError(
+        '닉네임 생성에 실패했습니다.',
+        500,
+        'FAILED_CREATE_NICKNAME'
+      )
+    );
   }
 };
 
@@ -305,4 +294,4 @@ const refreshJwtAccessToken = async (
   }
 };
 
-export { createUser, kakaoLogin, kakaoLogout, refreshJwtAccessToken };
+export { createNickname, kakaoLogin, kakaoLogout, refreshJwtAccessToken };
