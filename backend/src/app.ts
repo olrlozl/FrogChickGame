@@ -6,6 +6,7 @@ import rankRouter from './routes/rank-route';
 import playRouter from './routes/play-route';
 import HttpError from './models/http-error';
 import { checkAuth } from './middleware/auth-middleware';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -26,6 +27,8 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+
+app.use(cookieParser(process.env.COOKIE_SECRET));
 
 // 특정 API 제외하고 모든 요청에 checkAuth 적용
 app.use((req: Request, res: Response, next: NextFunction) => {

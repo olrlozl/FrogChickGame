@@ -16,7 +16,8 @@ const checkAuth = async (req: Request, res: Response, next: NextFunction) => {
     return next();
   }
 
-  const jwtAccessToken = req.headers.authorization?.split(' ')[1];
+  // 쿠키에서 jwt 엑세스 토큰 가져오기
+  const jwtAccessToken = req.cookies.access_token;
 
   if (!jwtAccessToken) {
     return next(

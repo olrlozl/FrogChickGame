@@ -99,10 +99,16 @@ const createNickname = async (
     // redis에 jwt 리프레시 토큰 저장
     await storeJwtRefreshTokenInRedis(user.id, jwtRefreshToken);
 
-    // 닉네임 생성 성공 응답
-    res.status(201).json({
-      jwtAccessToken,
+    // jwt 엑세스 토큰을 HttpOnly, Secure 쿠키로 설정
+    res.cookie('access_token', jwtAccessToken, {
+      httpOnly: true, // 클라이언트에서 JavaScript로 쿠키 접근 불가
+      secure: process.env.NODE_ENV === 'production', // 프로덕션 환경에서만 Secure 플래그 설정
+      maxAge: 1000 * 60 * 60, // 1시간 동안 유효
+      sameSite: 'strict', // CSRF 방지
     });
+
+    // 닉네임 생성 성공 응답
+    res.status(201).send();
   } catch (error) {
     return next(
       new HttpError(
@@ -184,10 +190,16 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
         'refresh'
       );
 
-      // 카카오 로그인 성공 응답 (닉네임 이미 있는 경우)
-      res.status(200).json({
-        jwtAccessToken,
+      // jwt 엑세스 토큰을 HttpOnly, Secure 쿠키로 설정
+      res.cookie('access_token', jwtAccessToken, {
+        httpOnly: true, // 클라이언트에서 JavaScript로 쿠키 접근 불가
+        secure: process.env.NODE_ENV === 'production', // 프로덕션 환경에서만 Secure 플래그 설정
+        maxAge: 1000 * 60 * 60, // 1시간 동안 유효
+        sameSite: 'strict', // CSRF 방지
       });
+
+      // 카카오 로그인 성공 응답 (닉네임 이미 있는 경우)
+      res.status(200).send();
     }
     // 2. 이미 가입했지만, 닉네임이 없는 경우 => userId 반환
     else if (signedupUser && !signedupUser.nickname) {
@@ -358,6 +370,7 @@ const refreshJwtAccessToken = async (
       if (error instanceof HttpError && error.type === 'EXPIRED_JWT_TOKEN') {
         // 만료된 jwt 엑세스 토큰의 payload에서 userId 추출
         const userId = getUserIdFromJwtAccessToken(jwtAccessToken);
+        console.log(userId + ' userid');
 
         // userId에 해당하는 사용자 조회
         const user = await User.findById(userId);
