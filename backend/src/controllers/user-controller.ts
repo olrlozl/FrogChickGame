@@ -36,17 +36,14 @@ const createNickname = async (
   }
 
   try {
-    // userId에 해당하는 사용자 조회
     const user = await User.findById(userId);
 
-    // userId에 해당하는 사용자가 없을 경우
     if (!user) {
       return next(
         new HttpError('사용자를 찾을 수 없습니다.', 404, 'NOT_FOUND_USER')
       );
     }
 
-    // 이미 닉네임이 있을 경우
     if (user.nickname) {
       return next(
         new HttpError(
@@ -57,10 +54,8 @@ const createNickname = async (
       );
     }
 
-    // 닉네임 유효성 검사
     validateNickname(nickname);
 
-    // 닉네임 중복 확인
     const existingNickname = await User.findOne({ nickname });
     if (existingNickname) {
       return next(
@@ -68,19 +63,13 @@ const createNickname = async (
       );
     }
 
-    // 닉네임 지정
     user.nickname = nickname;
 
-    // 사용자 정보 저장
     await user.save();
 
-    // jwt 엑세스 토큰 발급
     const jwtAccessToken = generateJwtToken(user.id, 'access');
-
-    // jwt 리프레시 토큰 발급
     const jwtRefreshToken = generateJwtToken(user.id, 'refresh');
 
-    // redis에 jwt 리프레시 토큰 저장
     await storeTokenInRedis(
       user.id,
       jwtRefreshToken,
@@ -92,11 +81,10 @@ const createNickname = async (
     res.cookie('access_token', jwtAccessToken, {
       httpOnly: true, // 클라이언트에서 JavaScript로 쿠키 접근 불가
       secure: process.env.NODE_ENV === 'production', // 프로덕션 환경에서만 Secure 플래그 설정
-      maxAge: JWT_CONFIG['access'].expirationSeconds * 1000, // 밀리초
+      maxAge: JWT_CONFIG['access'].expirationSeconds * 1000,
       sameSite: 'strict', // CSRF 방지
     });
 
-    // 닉네임 생성 성공 응답
     res.status(201).send();
   } catch (error) {
     return next(
@@ -126,7 +114,6 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    // 카카오 API에서 인가 코드로 액세스 토큰과 리프레시 토큰 받기
     const {
       kakaoAccessToken,
       kakaoRefreshToken,
@@ -134,21 +121,15 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       kakaoRefreshTokenExpirationTime,
     } = await getKakaoTokens(redirectUri, code);
 
-    // 카카오 API에서 카카오 ID 조회
     const kakaoId = await getKakaoId(kakaoAccessToken);
 
-    // 이미 가입한 사용자인지 확인
     const signedupUser = await User.findOne({ kakaoId });
 
-    // 1. 이미 가입했고, 닉네임도 있는 경우 => jwt 토큰 발급 후 반환
+    // 1. 이미 가입했고, 닉네임도 있는 경우
     if (signedupUser && signedupUser.nickname) {
-      // jwt 엑세스 토큰 발급
       const jwtAccessToken = generateJwtToken(signedupUser.id, 'access');
-
-      // jwt 리프레시 토큰 발급
       const jwtRefreshToken = generateJwtToken(signedupUser.id, 'refresh');
 
-      // redis에 jwt 리프레시 토큰 저장
       await storeTokenInRedis(
         signedupUser.id,
         jwtRefreshToken,
@@ -156,7 +137,6 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
         'jwtRefresh'
       );
 
-      // redis에 카카오 액세스 토큰 저장
       await storeTokenInRedis(
         signedupUser.id,
         kakaoAccessToken,
@@ -164,7 +144,6 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
         'kakaoAccess'
       );
 
-      // redis에 카카오 리프레시 토큰 저장
       await storeTokenInRedis(
         signedupUser.id,
         kakaoRefreshToken,
@@ -176,16 +155,14 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       res.cookie('access_token', jwtAccessToken, {
         httpOnly: true, // 클라이언트에서 JavaScript로 쿠키 접근 불가
         secure: process.env.NODE_ENV === 'production', // 프로덕션 환경에서만 Secure 플래그 설정
-        maxAge: JWT_CONFIG['access'].expirationSeconds * 1000, // 밀리초
+        maxAge: JWT_CONFIG['access'].expirationSeconds * 1000,
         sameSite: 'strict', // CSRF 방지
       });
 
-      // 카카오 로그인 성공 응답 (닉네임 이미 있는 경우)
       res.status(200).send();
     }
-    // 2. 이미 가입했지만, 닉네임이 없는 경우 => userId 반환
+    // 2. 이미 가입했지만, 닉네임이 없는 경우
     else if (signedupUser && !signedupUser.nickname) {
-      // redis에 카카오 액세스 토큰 저장
       await storeTokenInRedis(
         signedupUser.id,
         kakaoAccessToken,
@@ -193,7 +170,6 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
         'kakaoAccess'
       );
 
-      // redis에 카카오 리프레시 토큰 저장
       await storeTokenInRedis(
         signedupUser.id,
         kakaoRefreshToken,
@@ -201,22 +177,18 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
         'kakaoRefresh'
       );
 
-      // 카카오 로그인 성공 응답 (닉네임 없는 경우)
       res.status(200).json({
         userId: signedupUser.id,
       });
     }
-    // 3. 최초 로그인한 신규 회원일 경우 => 사용자 생성 후, userId 반환
+    // 3. 최초 로그인한 신규 회원일 경우
     else {
-      // 새로운 사용자 생성
       const createdUser = new User({
         kakaoId,
       });
 
-      // 사용자 정보 저장
       await createdUser.save();
 
-      // redis에 카카오 액세스 토큰 저장
       await storeTokenInRedis(
         createdUser.id,
         kakaoAccessToken,
@@ -224,7 +196,6 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
         'kakaoAccess'
       );
 
-      // redis에 카카오 리프레시 토큰 저장
       await storeTokenInRedis(
         createdUser.id,
         kakaoRefreshToken,
@@ -232,7 +203,6 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
         'kakaoRefresh'
       );
 
-      // 카카오 로그인 성공 응답 (닉네임 없는 경우)
       res.status(200).json({
         userId: createdUser.id,
       });
@@ -260,41 +230,33 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
 
   try {
     try {
-      // reids에서 카카오 액세스 토큰 조회
       kakaoAccessToken = await getTokenFromRedis(userId, 'kakaoAccess');
     } catch (error) {
-      // 카카오 엑세스 토큰이 만료되어 Redis에서 제거된 경우
+      // 카카오 엑세스 토큰이 만료되어 Redis에서 제거된 경우 갱신
       if (error instanceof HttpError && error.type === 'NOT_FOUND_TOKEN') {
-        // reids에서 카카오 리프레시 토큰 조회
         const kakaoRefreshToken = await getTokenFromRedis(
           userId,
           'kakaoRefresh'
         );
 
-        // 카카오 엑세스 토큰 갱신
         const newKakaoAccessToken = await refreshKakaoAccessToken(
           kakaoRefreshToken
         );
 
-        // 새로운 카카오 엑세스 토큰 할당
         kakaoAccessToken = newKakaoAccessToken;
       } else {
         throw error;
       }
     }
 
-    // 카카오 로그아웃
     await logoutKakao(kakaoAccessToken);
 
-    // redis에서 토큰 삭제
     await removeTokensFromRedis(userId);
 
-    // revokedAt 필드 현재 시간으로 갱신
     await User.findByIdAndUpdate(userId, {
       revokedAt: new Date(),
     });
 
-    // 카카오 로그아웃 성공 시
     res.status(204).send();
   } catch (error) {
     if (error instanceof HttpError) {
@@ -343,32 +305,23 @@ const refreshJwtAccessToken = async (
         );
       }
     } catch (error) {
-      // jwt 엑세스 토큰이 만료된 경우!
+      // jwt 엑세스 토큰이 만료된 경우 갱신
       if (error instanceof HttpError && error.type === 'EXPIRED_JWT_TOKEN') {
-        // 만료된 jwt 엑세스 토큰의 payload에서 userId 추출
         const userId = getUserIdFromJwtAccessToken(jwtAccessToken);
-        console.log(userId + ' userid');
-
-        // userId에 해당하는 사용자 조회
         const user = await User.findById(userId);
 
-        // userId에 해당하는 사용자가 없을 경우
         if (!user) {
           return next(
             new HttpError('사용자를 찾을 수 없습니다.', 404, 'NOT_FOUND_USER')
           );
         }
 
-        // redis에서 jwt 리프레시 토큰 조회
         const jwtRefreshToken = await getTokenFromRedis(userId, 'jwtRefresh');
 
-        // jwt 리프레시 토큰 검증
         verifyJwtToken(jwtRefreshToken, 'refresh');
 
-        // 새로운 jwt 엑세스 토큰 발급
         const newJwtAccessToken = generateJwtToken(userId, 'access');
 
-        // jwt 엑세스 토큰 갱신에 성공 시
         res.status(200).json({ newJwtAccessToken });
       } else {
         throw error;

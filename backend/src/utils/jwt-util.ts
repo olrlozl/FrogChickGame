@@ -74,7 +74,6 @@ const verifyJwtToken = async (jwtToken: string, tokenType: TokenType) => {
       );
     }
   } catch (error) {
-    // jwt 토큰 만료 시
     if (error instanceof jwt.TokenExpiredError) {
       throw new HttpError(
         'jwt 토큰이 만료되었습니다.',
