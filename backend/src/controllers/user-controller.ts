@@ -7,9 +7,8 @@ import {
   refreshKakaoAccessToken,
   storeKakaoTokenInRedis,
   getKakaoTokenFromRedis,
-  removeKakaoTokenFromRedis,
+  removeTokensFromRedis,
   storeJwtRefreshTokenInRedis,
-  removeJwtRefreshTokenFromRedis,
   getJwtRefreshTokenFromRedis,
 } from '../services/user-service';
 import { NextFunction, Request, Response } from 'express';
@@ -303,14 +302,8 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
     // 카카오 로그아웃
     await logoutKakao(kakaoAccessToken);
 
-    // redis에서 카카오 액세스 토큰 삭제
-    await removeKakaoTokenFromRedis(userId, 'access');
-
-    // redis에서 카카오 리프레시 토큰 삭제
-    await removeKakaoTokenFromRedis(userId, 'refresh');
-
-    // redis에서 jwt 리프레시 토큰 삭제
-    await removeJwtRefreshTokenFromRedis(userId);
+    // redis에서 토큰 삭제
+    await removeTokensFromRedis(userId);
 
     // revokedAt 필드 현재 시간으로 갱신
     await User.findByIdAndUpdate(userId, {

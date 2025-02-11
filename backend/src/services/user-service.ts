@@ -188,23 +188,21 @@ const getKakaoTokenFromRedis = async (userId: string, tokenType: TokenType) => {
   }
 };
 
-// Redis에서 카카오 토큰 제거
-const removeKakaoTokenFromRedis = async (
-  userId: string,
-  tokenType: TokenType
-) => {
-  const key =
-    tokenType === 'access'
-      ? `kakaoAccessToken:${userId}`
-      : `kakaoRefreshToken:${userId}`;
+// Redis에서 카카오 엑세스, 카카오 리프레시, jwt 리프레시 토큰 제거
+const removeTokensFromRedis = async (userId: string) => {
+  const keys = [
+    `kakaoAccessToken:${userId}`,
+    `kakaoRefreshToken:${userId}`,
+    `jwtRefreshToken:${userId}`,
+  ];
 
   try {
-    await redisClient.del(key);
+    await Promise.all(keys.map((key) => redisClient.del(key)));
   } catch (error) {
     throw new HttpError(
-      'Redis에서 카카오 토큰 제거에 실패했습니다.',
+      'Redis에서 토큰 제거에 실패했습니다.',
       500,
-      'FAILED_REMOVE_KAKAO_TOKEN'
+      'FAILED_REMOVE_TOKEN'
     );
   }
 };
@@ -248,19 +246,6 @@ const getJwtRefreshTokenFromRedis = async (userId: string) => {
   }
 };
 
-// Redis에서 jwt 리프레시 토큰 제거
-const removeJwtRefreshTokenFromRedis = async (userId: string) => {
-  try {
-    await redisClient.del(`jwtRefreshToken:${userId}`);
-  } catch (error) {
-    throw new HttpError(
-      'Redis에서 jwt 리프레시 토큰 제거에 실패했습니다.',
-      500,
-      'FAILED_REMOVE_JWT_REFRESH_TOKEN'
-    );
-  }
-};
-
 export {
   getKakaoTokens,
   getKakaoTokenInfo,
@@ -268,8 +253,7 @@ export {
   refreshKakaoAccessToken,
   storeKakaoTokenInRedis,
   getKakaoTokenFromRedis,
-  removeKakaoTokenFromRedis,
+  removeTokensFromRedis,
   storeJwtRefreshTokenInRedis,
   getJwtRefreshTokenFromRedis,
-  removeJwtRefreshTokenFromRedis,
 };
