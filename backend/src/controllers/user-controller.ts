@@ -194,6 +194,22 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
     }
     // 2. 이미 가입했지만, 닉네임이 없는 경우 => userId 반환
     else if (signedupUser && !signedupUser.nickname) {
+      // redis에 카카오 액세스 토큰 저장
+      await storeKakaoTokenInRedis(
+        signedupUser.id,
+        kakaoAccessToken,
+        kakaoAccessTokenExpirationTime,
+        'access'
+      );
+
+      // redis에 카카오 리프레시 토큰 저장
+      await storeKakaoTokenInRedis(
+        signedupUser.id,
+        kakaoRefreshToken,
+        kakaoRefreshTokenExpirationTime,
+        'refresh'
+      );
+
       // 카카오 로그인 성공 응답 (닉네임 없는 경우)
       res.status(200).json({
         userId: signedupUser.id,
