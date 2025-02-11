@@ -17,6 +17,7 @@ import {
   getUserIdFromJwtAccessToken,
   verifyJwtToken,
 } from '../utils/jwt-util';
+import { validateNickname } from '../utils/validate';
 
 const createNickname = async (
   req: Request,
@@ -58,16 +59,7 @@ const createNickname = async (
     }
 
     // 닉네임 유효성 검사
-    const nicknameRegex = /^[가-힣a-zA-Z]{2,6}$/;
-    if (!nicknameRegex.test(nickname)) {
-      return next(
-        new HttpError(
-          '닉네임은 한글, 영어 2~6자만 입력 가능합니다.',
-          422,
-          'INVALID_NICKNAME'
-        )
-      );
-    }
+    validateNickname(nickname);
 
     // 닉네임 중복 확인
     const existingNickname = await User.findOne({ nickname });
