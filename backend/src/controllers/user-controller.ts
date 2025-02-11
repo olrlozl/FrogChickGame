@@ -5,11 +5,9 @@ import {
   getKakaoTokenInfo,
   logoutKakao,
   refreshKakaoAccessToken,
-  storeKakaoTokenInRedis,
-  getKakaoTokenFromRedis,
+  storeTokenInRedis,
+  getTokenFromRedis,
   removeTokensFromRedis,
-  storeJwtRefreshTokenInRedis,
-  getJwtRefreshTokenFromRedis,
 } from '../services/user-service';
 import { NextFunction, Request, Response } from 'express';
 import {
@@ -88,7 +86,12 @@ const createNickname = async (
     );
 
     // redis에 jwt 리프레시 토큰 저장
-    await storeJwtRefreshTokenInRedis(user.id, jwtRefreshToken);
+    await storeTokenInRedis(
+      user.id,
+      jwtRefreshToken,
+      7 * 24 * 60 * 60, // 7일
+      'jwtRefresh'
+    );
 
     // jwt 엑세스 토큰을 HttpOnly, Secure 쿠키로 설정
     res.cookie('access_token', jwtAccessToken, {
@@ -163,22 +166,27 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       );
 
       // redis에 jwt 리프레시 토큰 저장
-      await storeJwtRefreshTokenInRedis(signedupUser.id, jwtRefreshToken);
+      await storeTokenInRedis(
+        signedupUser.id,
+        jwtRefreshToken,
+        7 * 24 * 60 * 60, // 7일
+        'jwtRefresh'
+      );
 
       // redis에 카카오 액세스 토큰 저장
-      await storeKakaoTokenInRedis(
+      await storeTokenInRedis(
         signedupUser.id,
         kakaoAccessToken,
         kakaoAccessTokenExpirationTime,
-        'access'
+        'kakaoAccess'
       );
 
       // redis에 카카오 리프레시 토큰 저장
-      await storeKakaoTokenInRedis(
+      await storeTokenInRedis(
         signedupUser.id,
         kakaoRefreshToken,
         kakaoRefreshTokenExpirationTime,
-        'refresh'
+        'kakaoRefresh'
       );
 
       // jwt 엑세스 토큰을 HttpOnly, Secure 쿠키로 설정
@@ -195,19 +203,19 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
     // 2. 이미 가입했지만, 닉네임이 없는 경우 => userId 반환
     else if (signedupUser && !signedupUser.nickname) {
       // redis에 카카오 액세스 토큰 저장
-      await storeKakaoTokenInRedis(
+      await storeTokenInRedis(
         signedupUser.id,
         kakaoAccessToken,
         kakaoAccessTokenExpirationTime,
-        'access'
+        'kakaoAccess'
       );
 
       // redis에 카카오 리프레시 토큰 저장
-      await storeKakaoTokenInRedis(
+      await storeTokenInRedis(
         signedupUser.id,
         kakaoRefreshToken,
         kakaoRefreshTokenExpirationTime,
-        'refresh'
+        'kakaoRefresh'
       );
 
       // 카카오 로그인 성공 응답 (닉네임 없는 경우)
@@ -226,19 +234,19 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       await createdUser.save();
 
       // redis에 카카오 액세스 토큰 저장
-      await storeKakaoTokenInRedis(
+      await storeTokenInRedis(
         createdUser.id,
         kakaoAccessToken,
         kakaoAccessTokenExpirationTime,
-        'access'
+        'kakaoAccess'
       );
 
       // redis에 카카오 리프레시 토큰 저장
-      await storeKakaoTokenInRedis(
+      await storeTokenInRedis(
         createdUser.id,
         kakaoRefreshToken,
         kakaoRefreshTokenExpirationTime,
-        'refresh'
+        'kakaoRefresh'
       );
 
       // 카카오 로그인 성공 응답 (닉네임 없는 경우)
@@ -267,7 +275,7 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
 
   try {
     // reids에서 카카오 액세스 토큰 조회
-    let kakaoAccessToken = await getKakaoTokenFromRedis(userId, 'access');
+    let kakaoAccessToken = await getTokenFromRedis(userId, 'kakaoAccess');
 
     // 카카오 엑세스 토큰이 만료되었을 경우, 갱신
     try {
@@ -279,9 +287,9 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
         error.type === 'EXPIRED_KAKAO_ACCESS_TOKEN'
       ) {
         // reids에서 카카오 리프레시 토큰 조회
-        const kakaoRefreshToken = await getKakaoTokenFromRedis(
+        const kakaoRefreshToken = await getTokenFromRedis(
           userId,
-          'refresh'
+          'kakaoRefresh'
         );
 
         // 카카오 엑세스 토큰 갱신
@@ -371,7 +379,7 @@ const refreshJwtAccessToken = async (
         }
 
         // redis에서 jwt 리프레시 토큰 조회
-        const jwtRefreshToken = await getJwtRefreshTokenFromRedis(userId);
+        const jwtRefreshToken = await getTokenFromRedis(userId, 'jwtRefresh');
 
         // jwt 리프레시 토큰 검증
         verifyJwtToken(jwtRefreshToken, 'refresh');

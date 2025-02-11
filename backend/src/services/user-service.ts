@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import dotenv from 'dotenv';
 import HttpError from '../models/http-error';
 import redisClient from '../config/redis-client';
-import { TokenType } from '../types/token';
+import { TokenCategory } from '../types/token';
 
 dotenv.config();
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
@@ -133,58 +133,53 @@ const refreshKakaoAccessToken = async (kakaoRefreshToken: string) => {
   }
 };
 
-// Redis에 카카오 토큰 저장
-const storeKakaoTokenInRedis = async (
+// Redis에 토큰 저장
+const storeTokenInRedis = async (
   userId: string,
-  kakaoToken: string,
-  kakaoTokenExpirationTime: number,
-  tokenType: TokenType
+  token: string,
+  expirationTime: number,
+  tokenCategory: TokenCategory
 ) => {
-  const key =
-    tokenType === 'access'
-      ? `kakaoAccessToken:${userId}`
-      : `kakaoRefreshToken:${userId}`;
+  const key = `${tokenCategory}Token:${userId}`;
 
   try {
-    await redisClient.set(key, kakaoToken, {
-      EX: kakaoTokenExpirationTime,
-    });
+    await redisClient.set(key, token, { EX: expirationTime });
   } catch (error) {
     throw new HttpError(
-      'Redis에 카카오 토큰 저장에 실패했습니다.',
+      'Redis에 토큰 저장에 실패했습니다.',
       500,
-      'FAILED_STORE_KAKAO_TOKEN'
+      'FAILED_STORE_TOKEN'
     );
   }
 };
 
-// Redis에서 카카오 토큰 조회
-const getKakaoTokenFromRedis = async (userId: string, tokenType: TokenType) => {
-  const key =
-    tokenType === 'access'
-      ? `kakaoAccessToken:${userId}`
-      : `kakaoRefreshToken:${userId}`;
+// Redis에서 토큰 조회
+const getTokenFromRedis = async (
+  userId: string,
+  tokenCategory: TokenCategory
+) => {
+  const key = `${tokenCategory}Token:${userId}`;
 
   try {
     const token = await redisClient.get(key);
     if (!token) {
       throw new HttpError(
-        '해당 사용자의 카카오 토큰을 찾을 수 없습니다.',
+        '해당 사용자의 토큰을 찾을 수 없습니다.',
         404,
-        'NOT_FOUND_KAKAO_TOKEN'
+        'NOT_FOUND_TOKEN'
       );
     }
     return token;
   } catch (error) {
     throw new HttpError(
-      'Redis에서 카카오 토큰 조회에 실패했습니다.',
+      'Redis에서 토큰 조회에 실패했습니다.',
       500,
-      'FAILED_GET_KAKAO_TOKEN'
+      'FAILED_GET_TOKEN'
     );
   }
 };
 
-// Redis에서 카카오 엑세스, 카카오 리프레시, jwt 리프레시 토큰 제거
+// Redis에서 토큰들 제거
 const removeTokensFromRedis = async (userId: string) => {
   const keys = [
     `kakaoAccessToken:${userId}`,
@@ -203,53 +198,12 @@ const removeTokensFromRedis = async (userId: string) => {
   }
 };
 
-// Redis에 jwt 리프레시 토큰 저장
-const storeJwtRefreshTokenInRedis = async (
-  userId: string,
-  jwtRefreshToken: string
-) => {
-  try {
-    await redisClient.set(`jwtRefreshToken:${userId}`, jwtRefreshToken, {
-      EX: 7 * 24 * 60 * 60, // 7일 후 만료
-    });
-  } catch (error) {
-    throw new HttpError(
-      'Redis에 jwt 리프레시 토큰 저장에 실패했습니다.',
-      500,
-      'FAILED_STORE_JWT_REFRESH_TOKEN'
-    );
-  }
-};
-
-// Redis에서 jwt 리프레시 토큰 조회
-const getJwtRefreshTokenFromRedis = async (userId: string) => {
-  try {
-    const token = await redisClient.get(`jwtRefreshToken:${userId}`);
-    if (!token) {
-      throw new HttpError(
-        '해당 사용자의 jwt 리프레시 토큰을 찾을 수 없습니다.',
-        404,
-        'NOT_FOUND_JWT_REFRESH_TOKEN'
-      );
-    }
-    return token;
-  } catch (error) {
-    throw new HttpError(
-      'Redis에서 jwt 리프레시 토큰 조회에 실패했습니다.',
-      500,
-      'FAILED_GET_JWT_REFRESH_TOKEN'
-    );
-  }
-};
-
 export {
   getKakaoTokens,
   getKakaoTokenInfo,
   logoutKakao,
   refreshKakaoAccessToken,
-  storeKakaoTokenInRedis,
-  getKakaoTokenFromRedis,
+  storeTokenInRedis,
+  getTokenFromRedis,
   removeTokensFromRedis,
-  storeJwtRefreshTokenInRedis,
-  getJwtRefreshTokenFromRedis,
 };
