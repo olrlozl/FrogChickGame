@@ -122,12 +122,8 @@ const refreshKakaoAccessToken = async (kakaoRefreshToken: string) => {
       }
     );
 
-    const { access_token, expires_in } = response.data;
-
-    return {
-      newKakaoAccessToken: access_token,
-      newKakaoAccessTokenExpirationTime: expires_in,
-    };
+    const { access_token } = response.data;
+    return access_token;
   } catch (error) {
     throw new HttpError(
       '카카오 엑세스 토큰 갱신 실패했습니다.',

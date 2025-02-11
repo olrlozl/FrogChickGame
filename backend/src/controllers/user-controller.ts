@@ -291,15 +291,8 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
         );
 
         // 카카오 엑세스 토큰 갱신
-        const { newKakaoAccessToken, newKakaoAccessTokenExpirationTime } =
-          await refreshKakaoAccessToken(kakaoRefreshToken);
-
-        // redis에 새로운 카카오 액세스 토큰 저장
-        await storeKakaoTokenInRedis(
-          userId,
-          newKakaoAccessToken,
-          newKakaoAccessTokenExpirationTime,
-          'access'
+        const newKakaoAccessToken = await refreshKakaoAccessToken(
+          kakaoRefreshToken
         );
 
         // 새로운 카카오 엑세스 토큰 할당
