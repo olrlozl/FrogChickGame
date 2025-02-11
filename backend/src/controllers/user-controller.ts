@@ -16,6 +16,7 @@ import {
   verifyJwtToken,
 } from '../utils/jwt-util';
 import { validateNickname } from '../utils/validate';
+import { JWT_CONFIG } from '../constants/jwt';
 
 const createNickname = async (
   req: Request,
@@ -89,7 +90,7 @@ const createNickname = async (
     await storeTokenInRedis(
       user.id,
       jwtRefreshToken,
-      7 * 24 * 60 * 60, // 7일
+      JWT_CONFIG['refresh'].expirationSeconds,
       'jwtRefresh'
     );
 
@@ -97,7 +98,7 @@ const createNickname = async (
     res.cookie('access_token', jwtAccessToken, {
       httpOnly: true, // 클라이언트에서 JavaScript로 쿠키 접근 불가
       secure: process.env.NODE_ENV === 'production', // 프로덕션 환경에서만 Secure 플래그 설정
-      maxAge: 1000 * 60 * 60, // 1시간 동안 유효
+      maxAge: JWT_CONFIG['access'].expirationSeconds * 1000, // 밀리초
       sameSite: 'strict', // CSRF 방지
     });
 
@@ -169,7 +170,7 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       await storeTokenInRedis(
         signedupUser.id,
         jwtRefreshToken,
-        7 * 24 * 60 * 60, // 7일
+        JWT_CONFIG['refresh'].expirationSeconds,
         'jwtRefresh'
       );
 
@@ -193,7 +194,7 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       res.cookie('access_token', jwtAccessToken, {
         httpOnly: true, // 클라이언트에서 JavaScript로 쿠키 접근 불가
         secure: process.env.NODE_ENV === 'production', // 프로덕션 환경에서만 Secure 플래그 설정
-        maxAge: 1000 * 60 * 60, // 1시간 동안 유효
+        maxAge: JWT_CONFIG['access'].expirationSeconds * 1000, // 밀리초
         sameSite: 'strict', // CSRF 방지
       });
 

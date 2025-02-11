@@ -1,34 +1,20 @@
 import jwt from 'jsonwebtoken';
 import HttpError from '../models/http-error';
-import { TokenType } from '../types/token';
 import User from '../models/user';
+import { TokenType } from '../types/token';
+import { JWT_CONFIG } from '../constants/jwt';
 
 interface JwtPayload {
   userId: string;
   revokedAt: Date;
 }
 
-const JWT_TOKEN_CONFIG: Record<
-  TokenType,
-  { secretKey: string; expirationTime: string }
-> = {
-  access: {
-    secretKey: process.env.JWT_ACCESS_SECRET_KEY || 'default_access_secret_key',
-    expirationTime: '1h', // 만료 시간 (1시간)
-  },
-  refresh: {
-    secretKey:
-      process.env.JWT_REFRESH_SECRET_KEY || 'default_refresh_secret_key',
-    expirationTime: '7d', // 만료 시간 (7일)
-  },
-};
-
 const generateJwtToken = (payload: JwtPayload, tokenType: TokenType) => {
   try {
-    const { secretKey, expirationTime } = JWT_TOKEN_CONFIG[tokenType];
+    const { secretKey, expirationDuration } = JWT_CONFIG[tokenType];
 
     const jwtToken = jwt.sign(payload, secretKey, {
-      expiresIn: expirationTime,
+      expiresIn: expirationDuration,
     });
     return jwtToken;
   } catch (error) {
@@ -42,7 +28,7 @@ const generateJwtToken = (payload: JwtPayload, tokenType: TokenType) => {
 
 const verifyJwtToken = async (jwtToken: string, tokenType: TokenType) => {
   try {
-    const { secretKey } = JWT_TOKEN_CONFIG[tokenType];
+    const { secretKey } = JWT_CONFIG[tokenType];
 
     // jwt 토큰 검증
     const decodedToken = jwt.verify(jwtToken, secretKey);
