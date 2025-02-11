@@ -263,13 +263,7 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
 
 const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
   // checkAuth 미들웨어에서 설정된 userId를 사용해 현재 요청 사용자를 식별
-  const userId = req.userId;
-
-  if (!userId) {
-    return next(
-      new HttpError('유효한 사용자 정보가 필요합니다.', 400, 'MISSING_USER_ID')
-    );
-  }
+  const userId = req.userId as string;
 
   try {
     // reids에서 카카오 액세스 토큰 조회
