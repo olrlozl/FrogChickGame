@@ -2,7 +2,7 @@ import HttpError from '../models/http-error';
 import User from '../models/user';
 import {
   getKakaoTokens,
-  getKakaoTokenInfo,
+  getKakaoId,
   logoutKakao,
   refreshKakaoAccessToken,
   storeTokenInRedis,
@@ -135,7 +135,7 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
     } = await getKakaoTokens(redirectUri, code);
 
     // 카카오 API에서 카카오 ID 조회
-    const { kakaoId } = await getKakaoTokenInfo(kakaoAccessToken);
+    const kakaoId = await getKakaoId(kakaoAccessToken);
 
     // 이미 가입한 사용자인지 확인
     const signedupUser = await User.findOne({ kakaoId });

@@ -48,36 +48,22 @@ const getKakaoTokens = async (redirectUri: string, code: string) => {
   }
 };
 
-// kakaoId와 카카오 엑세스 토큰 만료시간 조회
-const getKakaoTokenInfo = async (kakaoAccessToken: string) => {
+// 카카오 엑세스 토큰으로 kakaoId 조회
+const getKakaoId = async (kakaoAccessToken: string) => {
   try {
-    const response = await axios.get(
-      'https://kapi.kakao.com/v1/user/access_token_info',
-      {
-        headers: {
-          Authorization: `Bearer ${kakaoAccessToken}`,
-        },
-      }
-    );
-    const { id, expires_in } = response.data;
-    return { kakaoId: id, kakaoAccessTokenExpirationTime: expires_in };
+    const response = await axios.get('https://kapi.kakao.com/v2/user/me', {
+      headers: {
+        Authorization: `Bearer ${kakaoAccessToken}`,
+      },
+    });
+
+    const kakaoId: number = response.data.id;
+    return kakaoId;
   } catch (error) {
-    if (
-      error instanceof AxiosError &&
-      error.response?.status === 401 &&
-      error.response?.data.code === -401 &&
-      error.response?.data.msg === 'this access token is already expired'
-    ) {
-      throw new HttpError(
-        '카카오 액세스 토큰이 만료되었습니다.',
-        401,
-        'EXPIRED_KAKAO_ACCESS_TOKEN'
-      );
-    }
     throw new HttpError(
-      '카카오 정보 조회에 실패했습니다.',
+      'kakaoId 조회에 실패했습니다.',
       500,
-      'FAILED_GET_KAKAO_INFO'
+      'FAILED_GET_KAKAOID'
     );
   }
 };
@@ -200,7 +186,7 @@ const removeTokensFromRedis = async (userId: string) => {
 
 export {
   getKakaoTokens,
-  getKakaoTokenInfo,
+  getKakaoId,
   logoutKakao,
   refreshKakaoAccessToken,
   storeTokenInRedis,
