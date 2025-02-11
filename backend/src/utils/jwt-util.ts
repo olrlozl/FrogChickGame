@@ -6,7 +6,6 @@ import { JWT_CONFIG } from '../constants/jwt';
 
 interface JwtPayload {
   userId: string;
-  revokedAt: Date;
 }
 
 const generateJwtToken = (payload: JwtPayload, tokenType: TokenType) => {
@@ -36,11 +35,18 @@ const verifyJwtToken = async (jwtToken: string, tokenType: TokenType) => {
     if (
       decodedToken &&
       typeof decodedToken === 'object' &&
-      'userId' in decodedToken &&
-      'revokedAt' in decodedToken
+      'userId' in decodedToken
     ) {
-      // decodedToken에서 userId와 revokedAt을 추출
-      const { userId, revokedAt: tokenRevokedAt } = decodedToken;
+      // decodedToken에서 userId와 iat(토큰발행시간) 추출
+      const { userId, iat } = decodedToken;
+
+      if (!iat) {
+        throw new HttpError(
+          '토큰 발행 시간이 존재하지 않습니다.',
+          400,
+          'MISSING_IAT'
+        );
+      }
 
       // userId에 해당하는 사용자의 revokedAt 필드만 조회
       const user = await User.findById(userId).select('revokedAt');
@@ -53,11 +59,8 @@ const verifyJwtToken = async (jwtToken: string, tokenType: TokenType) => {
         );
       }
 
-      // 토큰의 revokedAt보다 DB의 revokedAt가 더 최신일 경우 토큰 무효화
-      if (
-        user.revokedAt &&
-        new Date(user.revokedAt) > new Date(tokenRevokedAt)
-      ) {
+      // 토큰 발행시간 보다 DB의 revokedAt가 더 최신일 경우 토큰 무효화
+      if (user.revokedAt && new Date(user.revokedAt) > new Date(iat * 1000)) {
         throw new HttpError(
           '이 토큰은 로그아웃된 사용자에 의한 것이므로 더 이상 유효하지 않습니다.',
           401,

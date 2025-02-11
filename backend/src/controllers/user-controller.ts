@@ -75,16 +75,10 @@ const createNickname = async (
     await user.save();
 
     // jwt 엑세스 토큰 발급
-    const jwtAccessToken = generateJwtToken(
-      { userId: user.id, revokedAt: user.revokedAt },
-      'access'
-    );
+    const jwtAccessToken = generateJwtToken({ userId: user.id }, 'access');
 
     // jwt 리프레시 토큰 발급
-    const jwtRefreshToken = generateJwtToken(
-      { userId: user.id, revokedAt: user.revokedAt },
-      'refresh'
-    );
+    const jwtRefreshToken = generateJwtToken({ userId: user.id }, 'refresh');
 
     // redis에 jwt 리프레시 토큰 저장
     await storeTokenInRedis(
@@ -152,7 +146,6 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       const jwtAccessToken = generateJwtToken(
         {
           userId: signedupUser.id,
-          revokedAt: signedupUser.revokedAt,
         },
         'access'
       );
@@ -161,7 +154,6 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
       const jwtRefreshToken = generateJwtToken(
         {
           userId: signedupUser.id,
-          revokedAt: signedupUser.revokedAt,
         },
         'refresh'
       );
@@ -386,10 +378,7 @@ const refreshJwtAccessToken = async (
         verifyJwtToken(jwtRefreshToken, 'refresh');
 
         // 새로운 jwt 엑세스 토큰 발급
-        const newJwtAccessToken = generateJwtToken(
-          { userId, revokedAt: user.revokedAt },
-          'access'
-        );
+        const newJwtAccessToken = generateJwtToken({ userId }, 'access');
 
         // jwt 엑세스 토큰 갱신에 성공 시
         res.status(200).json({ newJwtAccessToken });
