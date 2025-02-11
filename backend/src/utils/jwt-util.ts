@@ -4,13 +4,10 @@ import User from '../models/user';
 import { TokenType } from '../types/token';
 import { JWT_CONFIG } from '../constants/jwt';
 
-interface JwtPayload {
-  userId: string;
-}
-
-const generateJwtToken = (payload: JwtPayload, tokenType: TokenType) => {
+const generateJwtToken = (userId: string, tokenType: TokenType) => {
   try {
     const { secretKey, expirationDuration } = JWT_CONFIG[tokenType];
+    const payload = { userId };
 
     const jwtToken = jwt.sign(payload, secretKey, {
       expiresIn: expirationDuration,
