@@ -256,19 +256,15 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
   // checkAuth 미들웨어에서 설정된 userId를 사용해 현재 요청 사용자를 식별
   const userId = req.userId as string;
 
-  try {
-    // reids에서 카카오 액세스 토큰 조회
-    let kakaoAccessToken = await getTokenFromRedis(userId, 'kakaoAccess');
+  let kakaoAccessToken;
 
-    // 카카오 엑세스 토큰이 만료되었을 경우, 갱신
+  try {
     try {
-      getKakaoTokenInfo(kakaoAccessToken);
+      // reids에서 카카오 액세스 토큰 조회
+      kakaoAccessToken = await getTokenFromRedis(userId, 'kakaoAccess');
     } catch (error) {
-      // 카카오 엑세스 토큰이 만료된 경우!
-      if (
-        error instanceof HttpError &&
-        error.type === 'EXPIRED_KAKAO_ACCESS_TOKEN'
-      ) {
+      // 카카오 엑세스 토큰이 만료되어 Redis에서 제거된 경우
+      if (error instanceof HttpError && error.type === 'NOT_FOUND_TOKEN') {
         // reids에서 카카오 리프레시 토큰 조회
         const kakaoRefreshToken = await getTokenFromRedis(
           userId,
@@ -282,6 +278,8 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
 
         // 새로운 카카오 엑세스 토큰 할당
         kakaoAccessToken = newKakaoAccessToken;
+      } else {
+        throw error;
       }
     }
 
