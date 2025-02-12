@@ -61,6 +61,7 @@ app.use((error: HttpError, req: Request, res: Response, next: NextFunction) => {
 
   res.status(error.code || 500).json({
     message: error.message || '알 수 없는 에러가 발생했습니다.',
+    errorType: error.type || 'UNKNOWN_ERROR_OCCURRED',
   });
 });
 
