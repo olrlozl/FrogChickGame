@@ -7,10 +7,6 @@ export interface UserInfoInterface {
 }
 
 // API 관련
-export interface HasNicknameUserkakaoLoginResponse {
-  jwtAccessToken: string;
-}
-
 export interface NoNicknameUserkakaoLoginResponse {
   userId: string;
 }
@@ -20,15 +16,8 @@ export interface KakaoLoginParams {
   code: string;
 }
 
-export interface CreateNicknameResponse {
-  jwtAccessToken: string;
-}
 
 export interface CreateNicknameParams {
   userId: string;
   nickname: string;
-}
-
-export interface refreshJwtAccessTokenResponse {
-  newJwtAccessToken: string;
 }

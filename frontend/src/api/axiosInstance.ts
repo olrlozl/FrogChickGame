@@ -1,20 +1,16 @@
-import axios, { AxiosError } from "axios";
-import { refreshJwtAccessToken } from "./userApi";
-import { ERROR_MESSAGES } from "constants/errorMessages";
+import axios, { AxiosError } from 'axios';
+import { refreshJwtAccessToken } from './userApi';
+import { COMMON_MESSAGES, ERROR_MESSAGES } from 'constants/errorMessages';
 
 const instance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL_DEV + "/api",
+  baseURL: process.env.REACT_APP_API_URL_DEV + '/api',
+  withCredentials: true,
 });
 
 instance.interceptors.request.use(
   (config) => {
-    const jwtAccessToken = localStorage.getItem("jwtAccessToken");
-    if (jwtAccessToken) {
-      config.headers.Authorization = `Bearer ${jwtAccessToken}`;
-    }
-
     if (config.data) {
-      config.headers["Content-Type"] = "application/json";
+      config.headers['Content-Type'] = 'application/json';
     }
 
     return config;
@@ -25,8 +21,8 @@ instance.interceptors.request.use(
 );
 
 // 요청 대기열과 토큰 갱신 중인지 확인하는 변수
-let refreshingPromise: Promise<string> | null = null;
-const requestQueue: ((token: string) => void)[] = [];
+let refreshingPromise: Promise<boolean> | null = null;
+const requestQueue: (() => void)[] = [];
 
 export const setAxiosInterceptorResponse = (
   setErrorMessage: (errorMessage: string) => void
@@ -37,15 +33,14 @@ export const setAxiosInterceptorResponse = (
       if (err instanceof AxiosError) {
         if (err.response) {
           switch (err.response.data.errorType) {
-            case "EXPIRED_JWT_TOKEN": {
+            case 'EXPIRED_JWT_TOKEN': {
               const originalRequestConfig = err.config;
               if (!originalRequestConfig) return Promise.reject(err);
 
               // 토큰 갱신이 진행 중이라면 요청을 대기열에 추가
               if (refreshingPromise) {
                 return new Promise((resolve) => {
-                  requestQueue.push((newToken: string) => {
-                    originalRequestConfig.headers.Authorization = `Bearer ${newToken}`;
+                  requestQueue.push(() => {
                     resolve(instance(originalRequestConfig));
                   });
                 });
@@ -54,27 +49,24 @@ export const setAxiosInterceptorResponse = (
               // 토큰 갱신을 시작 (한 번만 실행)
               refreshingPromise = (async () => {
                 try {
-                  const authorization = originalRequestConfig.headers
-                    .Authorization as string;
-                  const { newJwtAccessToken } = await refreshJwtAccessToken(authorization);
-
-                  localStorage.setItem("jwtAccessToken", newJwtAccessToken);
-
+                  await refreshJwtAccessToken();
                   // 대기 중인 요청을 한꺼번에 실행
-                  requestQueue.forEach((callback) => callback(newJwtAccessToken));
+                  requestQueue.forEach((callback) => callback());
                   requestQueue.length = 0; // 큐 초기화
-                  
-                  return newJwtAccessToken;
+                  return true;
                 } catch (refreshJwtAccessTokenApiError) {
                   if (
                     refreshJwtAccessTokenApiError instanceof AxiosError &&
                     refreshJwtAccessTokenApiError.response &&
-                    refreshJwtAccessTokenApiError.response.data.errorType === "JWT_ACCESS_TOKEN_NOT_EXPIRED"
+                    refreshJwtAccessTokenApiError.response.data.errorType ===
+                      'JWT_ACCESS_TOKEN_NOT_EXPIRED'
                   ) {
-                    return localStorage.getItem("jwtAccessToken") || "";
+                    return true;
                   } else {
-                    setErrorMessage(ERROR_MESSAGES.COMMON.MISSING_JWT_ACCESS_TOKEN);
-                    return "";
+                    setErrorMessage(
+                      COMMON_MESSAGES.RE_LOGIN
+                    );
+                    return false;
                   }
                 } finally {
                   refreshingPromise = null; // 갱신 완료 후 null로 초기화
@@ -82,28 +74,27 @@ export const setAxiosInterceptorResponse = (
               })();
 
               // 새로운 토큰을 받아서 요청을 재시도
-              return refreshingPromise.then((newToken) => {
-                if (newToken) {
-                  originalRequestConfig.headers.Authorization = `Bearer ${newToken}`;
+              return refreshingPromise.then((success) => {
+                if (success) {
                   return instance(originalRequestConfig);
                 }
                 return Promise.reject(err);
               });
             }
-            case "MISSING_JWT_ACCESS_TOKEN":
-              setErrorMessage(ERROR_MESSAGES.COMMON.MISSING_JWT_ACCESS_TOKEN);
+            case 'MISSING_JWT_ACCESS_TOKEN':
+              setErrorMessage(COMMON_MESSAGES.RE_LOGIN);
               break;
           }
-        } else if (err.code === "ERR_NETWORK") {
+        } else if (err.code === 'ERR_NETWORK') {
           setErrorMessage(ERROR_MESSAGES.COMMON.ERR_NETWORK);
         } else {
           setErrorMessage(ERROR_MESSAGES.COMMON.OTHER);
         }
       } else if (err instanceof Error) {
-        console.log("JavaScript 에러 발생", err);
+        console.log('JavaScript 에러 발생', err);
         setErrorMessage(ERROR_MESSAGES.COMMON.OTHER);
       } else {
-        console.log("알 수 없는 에러 발생.", err);
+        console.log('알 수 없는 에러 발생.', err);
         setErrorMessage(ERROR_MESSAGES.COMMON.OTHER);
       }
       return Promise.reject(err);

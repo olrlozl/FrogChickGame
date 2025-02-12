@@ -3,6 +3,7 @@ import { kakaoLogin } from 'api/userApi';
 import { MUTATION_KEYS } from 'constants/reactQueryKeys';
 import { useNavigate } from 'react-router-dom';
 import { useErrorStore } from 'stores/errorStore';
+import { useUserStore } from 'stores/userStore';
 import { SetState } from 'types/common';
 import { errorHandle } from 'utils/error';
 
@@ -12,6 +13,8 @@ export const useLogin = (
 ) => {
   const { setErrorMessage } = useErrorStore();
 
+  const { login } = useUserStore();
+
   const navigate = useNavigate();
 
   const { mutate: executeKakaoLogin } = useMutation({
@@ -19,11 +22,11 @@ export const useLogin = (
     mutationKey: [MUTATION_KEYS.login],
     onSuccess: (data) => {
       // 닉네임 있는 유저
-      if ('jwtAccessToken' in data) {
-        localStorage.setItem('jwtAccessToken', data.jwtAccessToken);
+      if (data === '') {
+        login();
         navigate('/main');
 
-      // 닉네임 없는 유저
+        // 닉네임 없는 유저
       } else {
         setUserId(data.userId);
         openModal();
