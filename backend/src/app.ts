@@ -14,10 +14,12 @@ dotenv.config();
 
 const MONGO_URL = process.env.MONGO_URL as string;
 const SERVER_PORT = process.env.SERVER_PORT;
+const CLIENT_URL = process.env.CLIENT_URL as string;
 
 // CORS 설정
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', CLIENT_URL);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
