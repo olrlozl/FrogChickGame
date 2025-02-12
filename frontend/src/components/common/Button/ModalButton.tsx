@@ -4,11 +4,20 @@ interface ModalButtonProps {
   label: string;
   onClick: () => void;
   type: 'primary' | 'secondary' | 'cancel';
+  isLoading?: boolean;
 }
 
-const ModalButton = ({ label, onClick, type }: ModalButtonProps) => {
+const ModalButton = ({
+  label,
+  onClick,
+  type,
+  isLoading = false,
+}: ModalButtonProps) => {
   return (
-    <button className={`modal-button ${type}`} onClick={onClick}>
+    <button
+      className={`modal-button ${type} ${isLoading ? 'disabled' : undefined}`}
+      onClick={onClick}
+    >
       {label}
     </button>
   );

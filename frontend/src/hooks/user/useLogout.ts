@@ -10,7 +10,7 @@ export const useLogout = (closeModal: () => void) => {
 
   const clearAndNavigateToLanding = useClear();
 
-  const { mutate: executeKakaoLogout } = useMutation({
+  const { mutate: executeKakaoLogout, isPending: isLogoutLoading } = useMutation({
     mutationFn: kakaoLogout,
     mutationKey: [MUTATION_KEYS.logout],
     onSuccess: () => {
@@ -24,5 +24,5 @@ export const useLogout = (closeModal: () => void) => {
     },
   });
 
-  return executeKakaoLogout;
+  return { executeKakaoLogout, isLogoutLoading };
 };

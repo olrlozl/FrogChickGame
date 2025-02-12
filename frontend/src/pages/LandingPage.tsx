@@ -11,19 +11,19 @@ import KakaoButton from 'components/user/KakaoButton';
 import { useLogin } from 'hooks/user/useLogin';
 
 const LandingPage = () => {
-  const { isModalOpen, openModal } = useModal();
+  const { isModalOpen, openModal, closeModal } = useModal();
   const [userId, setUserId] = useState('');
   const [nicknameErrorMessage, setNicknameErrorMessage] = useState('');
   const [nickname, setNickname] = useState('');
   const { message, btns } = modalProps.createNickname;
 
   // 1. 카카오 버튼 처음 눌렀을 때
-  const code = new URL(window.location.href).searchParams.get('code');
   const handleClickGetKakaoCode = () => {
     window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.REACT_APP_REST_API_KEY}&redirect_uri=${process.env.REACT_APP_REDIRECT_URI}&response_type=code`;
   };
-
+  
   // 2. 리다이렉션 후 카카오 로그인 시도
+  const code = new URL(window.location.href).searchParams.get('code');
   const executeKakaoLogin = useLogin(setUserId, openModal);
   useEffect(() => {
     if (code) {
@@ -33,10 +33,11 @@ const LandingPage = () => {
   }, [code, executeKakaoLogin]);
 
   // 3. 미가입 유저라면 닉네임 생성
-  const validateAndCreateNickname = useNickname(
+  const { validateAndCreateNickname, isCreateNicknameLoading } = useNickname(
     userId,
     nickname,
-    setNicknameErrorMessage
+    setNicknameErrorMessage,
+    closeModal
   );
 
   return (
@@ -49,6 +50,7 @@ const LandingPage = () => {
         message={message}
         btns={btns}
         buttonActions={[validateAndCreateNickname]}
+        isLoading={isCreateNicknameLoading}
       >
         <Modal.NicknameInput
           text="한글, 영어 2~6자"

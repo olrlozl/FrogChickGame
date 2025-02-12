@@ -22,7 +22,7 @@ const GuidePage = () => {
       setSelectedOption((prev) => (prev === 'rule' ? 'control' : 'rule'));
   };
 
-  const executeKakaoLogout = useLogout(closeModal);
+  const { executeKakaoLogout, isLogoutLoading } = useLogout(closeModal);
 
   return (
     <div className="guide-page">
@@ -37,6 +37,7 @@ const GuidePage = () => {
         message={message}
         btns={btns}
         buttonActions={[executeKakaoLogout, closeModal]}
+        isLoading={isLogoutLoading}
       />
     </div>
   );

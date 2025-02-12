@@ -9,7 +9,7 @@
   font-size: 25px;
   border: 1px solid $color-blue4;
   border-radius: 10px;
-
+  
   width: 115px;
   height: 47px;
 
@@ -27,5 +27,13 @@
     color: white;
     background-color: $color-green2;
     border: none;
+  }
+
+  &.disabled {
+    pointer-events: none;
+    // cursor: not-allowed;
+    color: #929292;
+    border: none;
+    background-color: #D9D9D9;
   }
 }
