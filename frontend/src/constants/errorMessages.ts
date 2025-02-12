@@ -19,7 +19,7 @@ interface ErrorMessages {
   [key: string]: { [key: string]: string};
 }
 
-const COMMON_MESSAGES = {
+export const COMMON_MESSAGES = {
   RE_LOGIN: '다시 로그인 해주세요.',
   RETRY: '잠시 후 다시 시도해주세요.',
 }
@@ -46,6 +46,7 @@ export const ERROR_MESSAGES: ErrorMessages = {
     IVALID_NICKNAME: '한글, 영어 2~6자',
     NOT_FOUND_USER: COMMON_MESSAGES.RE_LOGIN,
     DUPLICATED_NICKNAME: '이미 사용중인 닉네임입니다.',
+    ALREADY_EXISTS_NICKNAME: '이미 닉네임이 있습니다.'
   },
   SEARCH_FRIEND: {},
   GET_FRIEND: {},
