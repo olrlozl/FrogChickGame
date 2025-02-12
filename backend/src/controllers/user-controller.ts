@@ -322,7 +322,14 @@ const refreshJwtAccessToken = async (
 
         const newJwtAccessToken = generateJwtToken(userId, 'access');
 
-        res.status(200).json({ newJwtAccessToken });
+        res.cookie('access_token', newJwtAccessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: JWT_CONFIG['access'].expirationSeconds * 1000,
+          sameSite: 'strict',
+        });
+
+        res.status(200).send();
       } else {
         throw error;
       }
