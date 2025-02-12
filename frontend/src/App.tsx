@@ -1,7 +1,4 @@
-import {
-  RouterProvider,
-  createBrowserRouter,
-} from 'react-router-dom';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import './App.css';
 import LandingPage from 'pages/LandingPage';
 import MainPage from 'pages/MainPage';
@@ -11,46 +8,47 @@ import MainLayout from 'components/common/Layout/MainLayout';
 import GuidePage from 'pages/GuidePage';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { checkAuthLoader } from 'utils/auth';
-import { useEffect } from 'react';
-import Modal from 'components/common/Modal/Modal';
-import { modalProps } from 'constants/modal';
-import instance, { setAxiosInterceptorResponse } from 'api/axiosInstance';
 import { queryClient } from 'api/queryClient';
 import LoadingSpinner from 'components/common/LoadingSpinner';
+import { ProtectedRoute } from 'components/common/ProtectedRoute';
+import { useEffect } from 'react';
+import instance, { setAxiosInterceptorResponse } from 'api/axiosInstance';
 import { useErrorStore } from 'stores/errorStore';
-import { useClear } from 'hooks/common/useClear';
-import { ERROR_MESSAGES } from 'constants/errorMessages';
+import { PublicRoute } from 'components/common/PublicRoute';
 
 const router = createBrowserRouter([
-  { path: '/', element: <LandingPage /> },
-  { path: '/play', element: <PlayPage />, loader: checkAuthLoader },
   {
-    path: '/main',
-    element: <MainLayout />,
-    loader: checkAuthLoader,
+    element: <PublicRoute />,
+    children: [{ path: '/', element: <LandingPage /> }],
+  },
+  {
+    element: <ProtectedRoute />,
     children: [
+      { path: '/play', element: <PlayPage /> },
       {
-        index: true,
-        element: <MainPage />,
-      },
-      {
-        path: 'rank',
-        element: <RankPage />,
-        loader: checkAuthLoader,
-      },
-      {
-        path: 'guide',
-        element: <GuidePage />,
-        loader: checkAuthLoader,
+        path: '/main',
+        element: <MainLayout />,
+        children: [
+          {
+            index: true,
+            element: <MainPage />,
+          },
+          {
+            path: 'rank',
+            element: <RankPage />,
+          },
+          {
+            path: 'guide',
+            element: <GuidePage />,
+          },
+        ],
       },
     ],
   },
 ]);
 
 function App() {
-  const { errorMessage, setErrorMessage, clearErrorMessage } = useErrorStore();
-  const clearAndNavigateToLanding = useClear();
+  const { setErrorMessage } = useErrorStore();
 
   useEffect(() => {
     const interceptorId = setAxiosInterceptorResponse(setErrorMessage);
@@ -60,24 +58,11 @@ function App() {
     };
   }, []);
 
-  const handleClickModalAction =
-    errorMessage === ERROR_MESSAGES.COMMON.MISSING_JWT_ACCESS_TOKEN
-      ? clearAndNavigateToLanding
-      : clearErrorMessage;
-
-  const { btns } = modalProps.error;
-
   return (
     <div className="App">
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
         <LoadingSpinner />
-        <Modal
-          isOpen={!!errorMessage}
-          message={errorMessage}
-          btns={btns}
-          buttonActions={[handleClickModalAction]}
-        />
         <ReactQueryDevtools />
       </QueryClientProvider>
     </div>
