@@ -14,6 +14,7 @@ interface ModalProps {
   messageFontSize?: MessageFontSize;
   btns: { label: string; type: ButtonType }[];
   buttonActions: (() => void)[];
+  isLoading?: boolean;
   children?: ReactNode;
 }
 
@@ -23,6 +24,7 @@ const Modal = ({
   messageFontSize = 'font-md',
   btns,
   buttonActions,
+  isLoading = false,
   children,
 }: ModalProps) => {
   if (!isOpen) return null;
@@ -40,6 +42,7 @@ const Modal = ({
               label={btn.label}
               onClick={buttonActions[index]}
               type={btn.type}
+              isLoading={isLoading}
             />
           ))}
         </div>

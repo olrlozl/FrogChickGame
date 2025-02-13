@@ -7,14 +7,8 @@ export interface UserInfoInterface {
 }
 
 // API 관련
-export interface UnSignedupUserkakaoLoginResponse {
-  jwtAccessToken: null;
-  kakaoAccessToken: string;
-}
-
-export interface SignedupUserkakaoLoginResponse {
-  jwtAccessToken: string;
-  kakaoAccessToken: null;
+export interface NoNicknameUserkakaoLoginResponse {
+  userId: string;
 }
 
 export interface KakaoLoginParams {
@@ -22,15 +16,8 @@ export interface KakaoLoginParams {
   code: string;
 }
 
-export interface CreateUserResponse {
-  jwtAccessToken: string;
-}
 
-export interface CreateUserParams {
+export interface CreateNicknameParams {
+  userId: string;
   nickname: string;
-  kakaoAccessToken: string;
-}
-
-export interface refreshJwtAccessTokenResponse {
-  newJwtAccessToken: string;
 }

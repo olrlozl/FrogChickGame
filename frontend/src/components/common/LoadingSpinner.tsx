@@ -9,11 +9,8 @@ const LoadingSpinner = () => {
   const isLoginMutating = useIsMutating({
     mutationKey: [MUTATION_KEYS.login],
   });
-  const isLogoutMutating = useIsMutating({
-    mutationKey: [MUTATION_KEYS.logout],
-  });
-  const isLoading = !!(isFetching || isLoginMutating || isLogoutMutating);
-
+  const isLoading = !!(isFetching || isLoginMutating);
+  
   return (
     <div className={`loading-spinner ${isLoading ? undefined : 'disabled'}`}>
       <OverLay />
