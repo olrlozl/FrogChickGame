@@ -60,7 +60,7 @@ export const useNickname = (
 
     const isValidNickname = validateNickname(nickname);
     if (!isValidNickname) {
-      setNicknameErrorMessage(ERROR_MESSAGES.CREATE_NICKNAME.IVALID_NICKNAME);
+      setNicknameErrorMessage(ERROR_MESSAGES.CREATE_NICKNAME.INVALID_NICKNAME);
       return;
     }
 
