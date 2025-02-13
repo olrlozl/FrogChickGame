@@ -1,11 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
-import userRouter from './routes/user-routes';
-import rankRouter from './routes/rank-routes';
-import playRouter from './routes/play-routes';
+import userRouter from './routes/user-route';
+import rankRouter from './routes/rank-route';
+import playRouter from './routes/play-route';
 import HttpError from './models/http-error';
+import { checkAuth } from './middleware/auth-middleware';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -13,9 +14,39 @@ dotenv.config();
 
 const MONGO_URL = process.env.MONGO_URL as string;
 const SERVER_PORT = process.env.SERVER_PORT;
+const CLIENT_URL = process.env.CLIENT_URL as string;
 
-// 요청으로 json이 오면 일반적 데이터 구조(객체, 배열 등)으로 변환
-app.use(bodyParser.json());
+// CORS 설정
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', CLIENT_URL);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
+  next();
+});
+
+app.use(express.json());
+
+app.use(cookieParser(process.env.COOKIE_SECRET));
+
+// 특정 API 제외하고 모든 요청에 checkAuth 적용
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // 인증 없이 접근할 수 있는 API 경로
+  const openPaths = [
+    '/api/user/nickname',
+    '/api/user/login/kakao',
+    '/api/user/refresh/jwt-access-token',
+  ];
+
+  if (openPaths.includes(req.path)) {
+    return next(); // 인증 없이 바로 다음 미들웨어 실행
+  }
+
+  return checkAuth(req, res, next); // 인증 미들웨어 실행
+});
 
 app.use('/api/user', userRouter);
 app.use('/api/rank', rankRouter);
@@ -25,11 +56,12 @@ app.use('/api/play', playRouter);
 app.use((error: HttpError, req: Request, res: Response, next: NextFunction) => {
   // 응답이 이미 전송된 경우
   if (res.headersSent) {
-    return next(error); 
+    return next(error);
   }
 
   res.status(error.code || 500).json({
     message: error.message || '알 수 없는 에러가 발생했습니다.',
+    errorType: error.type || 'UNKNOWN_ERROR_OCCURRED',
   });
 });
 
@@ -37,9 +69,10 @@ app.use((error: HttpError, req: Request, res: Response, next: NextFunction) => {
 mongoose
   .connect(MONGO_URL)
   .then(() => {
+    console.log('MongoDB 서버 연결 성공');
     // 백엔드 서버와 연결(5000번 포트)
     app.listen(SERVER_PORT);
   })
-  .catch((err) => {
-    console.log(err);
+  .catch((error) => {
+    console.error('MongoDB 연결 실패:', error);
   });
