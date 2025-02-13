@@ -151,12 +151,11 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
         'kakaoRefresh'
       );
 
-      // jwt 엑세스 토큰을 HttpOnly, Secure 쿠키로 설정
       res.cookie('access_token', jwtAccessToken, {
-        httpOnly: true, // 클라이언트에서 JavaScript로 쿠키 접근 불가
-        secure: process.env.NODE_ENV === 'production', // 프로덕션 환경에서만 Secure 플래그 설정
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
         maxAge: JWT_CONFIG['access'].expirationSeconds * 1000,
-        sameSite: 'strict', // CSRF 방지
+        sameSite: 'strict',
       });
 
       res.status(200).send();
@@ -251,6 +250,12 @@ const kakaoLogout = async (req: Request, res: Response, next: NextFunction) => {
 
     await logoutKakao(kakaoAccessToken);
 
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
     await removeTokensFromRedis(userId);
 
     await User.findByIdAndUpdate(userId, {
@@ -278,7 +283,7 @@ const refreshJwtAccessToken = async (
   res: Response,
   next: NextFunction
 ) => {
-  const jwtAccessToken = req.headers.authorization?.split(' ')[1];
+  const jwtAccessToken = req.cookies.access_token;
 
   if (!jwtAccessToken) {
     return next(
