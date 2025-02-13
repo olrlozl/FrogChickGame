@@ -22,17 +22,14 @@ const kakaoLogout = async () => {
   await instance.post(API_ENDPOINTS.KAKAO_LOGOUT);
 };
 
-const createNickname = async ({
-  userId,
-  nickname,
-}: CreateNicknameParams): Promise<void> => {
+const createNickname = async ({ userId, nickname }: CreateNicknameParams) => {
   await instance.post(API_ENDPOINTS.CREATE_NICKNAME, {
     userId,
     nickname,
   });
 };
 
-const refreshJwtAccessToken = async (): Promise<void> => {
+const refreshJwtAccessToken = async () => {
   await axios.post(
     process.env.REACT_APP_API_URL_DEV +
       '/api' +
