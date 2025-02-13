@@ -4,6 +4,7 @@ import { AxiosError } from 'axios';
 import { COMMON_MESSAGES, ERROR_MESSAGES } from 'constants/errorMessages';
 import { useNavigate } from 'react-router-dom';
 import { useErrorStore } from 'stores/errorStore';
+import { useUserStore } from 'stores/userStore';
 import { SetState } from 'types/common';
 import { errorHandle } from 'utils/error';
 import { validateNickname } from 'utils/validate';
@@ -17,9 +18,12 @@ export const useNickname = (
   const navigate = useNavigate();
   const { setErrorMessage } = useErrorStore();
 
+  const { login } = useUserStore();
+
   const { mutate, isPending: isCreateNicknameLoading } = useMutation({
     mutationFn: createNickname,
     onSuccess: () => {
+      login();
       navigate('/main');
     },
     onError: (e) => {
