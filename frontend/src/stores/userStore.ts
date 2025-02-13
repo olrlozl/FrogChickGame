@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 
 type UserStoreState = {
   isLogin: boolean;
@@ -14,11 +14,14 @@ type UserStore = UserStoreState & UserStoreActions;
 
 export const useUserStore = create<UserStore>()(
   devtools(
-    (set) => ({
-      isLogin: false,
-      login: () => set({ isLogin: true }),
-      logout: () => set({ isLogin: false }),
-    }),
+    persist(
+      (set) => ({
+        isLogin: false,
+        login: () => set({ isLogin: true }),
+        logout: () => set({ isLogin: false }),
+      }),
+      { name: 'UserStore' }
+    ),
     { name: 'UserStore' }
   )
 );
