@@ -32,7 +32,7 @@ const LandingPage = () => {
     }
   }, [code, executeKakaoLogin]);
 
-  // 3. 미가입 유저라면 닉네임 생성
+  // 3. 가입했지만 닉네임이 null인 유저라면 닉네임 생성
   const { validateAndCreateNickname, isCreateNicknameLoading } = useNickname(
     userId,
     nickname,
