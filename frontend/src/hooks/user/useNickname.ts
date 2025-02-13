@@ -52,7 +52,6 @@ export const useNickname = (
   });
 
   const validateAndCreateNickname = () => {
-    console.log('gd')
     if (!nickname) {
       setNicknameErrorMessage(ERROR_MESSAGES.CREATE_NICKNAME.MISSING_NICKNAME);
       return;
