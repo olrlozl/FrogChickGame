@@ -5,11 +5,7 @@ interface BalloonTitleProps {
 }
 
 const BalloonTitle = ({ title }: BalloonTitleProps) => {
-  return (
-    <div className="balloon-title">
-      <label>{title}</label>
-    </div>
-  );
+  return <h2 className="balloon-title">{title}</h2>;
 };
 
 export default BalloonTitle;
