@@ -108,4 +108,42 @@ const applyFriend = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { searchFriend, applyFriend };
+const getReceivedFriendList = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.userId as string;
+
+    const user = await User.findById(userId).populate(
+      'friendRequests.received',
+      'nickname'
+    );
+    if (!user) {
+      return next(
+        new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USERID')
+      );
+    }
+
+    const receivedList = user.friendRequests.received.map((friend: any) => ({
+      nickname: friend.nickname,
+    }));
+
+    res.json({ receivedList });
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return next(error);
+    } else {
+      return next(
+        new HttpError(
+          '친구 신청 목록 조회에 실패했습니다.',
+          500,
+          'FAILED_GET_RECEIVED_FRIEND_LIST'
+        )
+      );
+    }
+  }
+};
+
+export { searchFriend, applyFriend, getReceivedFriendList };
