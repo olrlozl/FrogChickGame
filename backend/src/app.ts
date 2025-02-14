@@ -7,6 +7,7 @@ import playRouter from './routes/play-route';
 import HttpError from './models/http-error';
 import { checkAuth } from './middleware/auth-middleware';
 import cookieParser from 'cookie-parser';
+import friendRouter from './routes/friend-route';
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use('/api/user', userRouter);
+app.use('/api/friend', friendRouter);
 app.use('/api/rank', rankRouter);
 app.use('/api/play', playRouter);
 
