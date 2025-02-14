@@ -5,7 +5,6 @@ import {
   kakaoLogout,
   refreshJwtAccessToken,
 } from '../controllers/user-controller';
-import { checkAuth } from '../middleware/auth-middleware';
 
 const userRouter = Router();
 
