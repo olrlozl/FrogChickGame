@@ -45,21 +45,6 @@ export const useSearchFriend = (
     queryFn: () => searchFriend({ nickname: searchedNickname }),
     enabled: !!searchedNickname,
     staleTime: 1000 * 60 * 30,
-    retry: (failureCount, err) => {
-      const canRetry = failureCount < MAX_RETRIES;
-
-      // 네트워크 오류, 서버 오류인 경우 재시도
-      if (err instanceof AxiosError) {
-        if (
-          err.code === 'ERR_NETWORK' ||
-          (err.response?.status && err.response?.status >= 500)
-        )
-          return canRetry;
-      }
-
-      // 그 외는 재시도 안함
-      return false;
-    },
   });
 
   useEffect(
