@@ -14,4 +14,12 @@ export interface ApplyFriendParams {
   to: string;
 }
 
+type ReceivedList = {
+  nickname: string;
+}[];
+
+export interface GetReceivedFriendListResponse {
+  receivedList: ReceivedList;
+}
+
 export type FriendStatus = 'online' | 'offline' | 'playing';
