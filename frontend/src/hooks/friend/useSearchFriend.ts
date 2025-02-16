@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { searchFriend } from 'api/friendApi';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { applyFriend, searchFriend } from 'api/friendApi';
+import { queryClient } from 'api/queryClient';
 import { AxiosError } from 'axios';
 import { COMMON_MESSAGES, ERROR_MESSAGES } from 'constants/errorMessages';
 import { QUERY_KEYS } from 'constants/reactQueryKeys';
@@ -88,9 +89,52 @@ export const useSearchFriend = (
     [isSearchFriendError, searchFriendError]
   );
 
+  const { mutate: executeApplyFriend, isPending: isApplyFriendLoading } =
+    useMutation({
+      mutationFn: applyFriend,
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.friends, variables.to],
+        });
+      },
+      onError: (err) => {
+        if (err instanceof AxiosError && err.response?.data.errorType) {
+          switch (err.response?.data.errorType) {
+            case 'INVALID_USERID':
+              setErrorMessage(COMMON_MESSAGES.RE_LOGIN);
+              break;
+
+            // 이미 신청하거나, 친구인 경우 UI 갱신을 위해 쿼리 무효화
+            case 'ALREADY_FRIEND':
+            case 'ALREADY_APPLY_FRIEND':
+              if ('to' in err.config?.data) {
+                queryClient.invalidateQueries({
+                  queryKey: [QUERY_KEYS.friends, err.config?.data.to],
+                });
+              }
+              break;
+
+            // 존재하지 않는 사용자일 경우 캐시에서 삭제 후 에러메시지 표시
+            case 'UNKNOWN_USER':
+              if ('to' in err.config?.data) {
+                queryClient.removeQueries({
+                  queryKey: [QUERY_KEYS.friends, err.config?.data.to],
+                });
+              }
+              setNicknameErrorMessage(ERROR_MESSAGES.APPLY_FRIEND.UNKNOWN_USER);
+              break;
+            default:
+              errorHandle(err, setNicknameErrorMessage, 'APPLY_FRIEND');
+          }
+        }
+      },
+    });
+
   return {
     userInfo,
     validateAndSearchFriend,
     searchFriendLoading,
+    executeApplyFriend,
+    isApplyFriendLoading,
   };
 };

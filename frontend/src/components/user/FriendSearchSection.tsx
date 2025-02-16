@@ -12,13 +12,28 @@ const FriendSearchSection = () => {
   const [nickname, setNickname] = useState('');
   const [nicknameErrorMessage, setNicknameErrorMessage] = useState('');
 
-  const { userInfo, searchFriendLoading, validateAndSearchFriend } =
-    useSearchFriend(nickname, setNicknameErrorMessage);
+  const {
+    userInfo,
+    searchFriendLoading,
+    validateAndSearchFriend,
+    executeApplyFriend,
+    isApplyFriendLoading,
+  } = useSearchFriend(nickname, setNicknameErrorMessage);
 
   const getMiniButtonType = (userInfo: SearchFriendResponse) => {
     if (userInfo.isFriend) return 'friend';
     if (userInfo.isSent) return 'pending';
     return 'add';
+  };
+
+  const getMiniButtonOnClick = (userInfo: SearchFriendResponse) => {
+    if (userInfo.isFriend) return;
+
+    if (userInfo.isSent) return () => {};
+    else
+      return () => {
+        executeApplyFriend({ to: userInfo.nickname });
+      };
   };
 
   return (
@@ -41,7 +56,11 @@ const FriendSearchSection = () => {
         {userInfo && (
           <>
             <UserInfo userInfoOption="search" userInfo={userInfo} />
-            <MiniButton type={getMiniButtonType(userInfo)} />
+            <MiniButton
+              type={getMiniButtonType(userInfo)}
+              onClick={getMiniButtonOnClick(userInfo)}
+              isLoading={isApplyFriendLoading}
+            />
           </>
         )}
         {nicknameErrorMessage && (

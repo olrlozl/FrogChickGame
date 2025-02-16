@@ -10,4 +10,8 @@ export interface SearchFriendResponse {
   isFriend: boolean;
 }
 
+export interface ApplyFriendParams {
+  to: string;
+}
+
 export type FriendStatus = 'online' | 'offline' | 'playing';

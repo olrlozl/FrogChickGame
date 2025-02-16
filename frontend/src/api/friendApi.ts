@@ -1,4 +1,8 @@
-import { SearchFriendParams, SearchFriendResponse } from 'types/friend';
+import {
+  ApplyFriendParams,
+  SearchFriendParams,
+  SearchFriendResponse,
+} from 'types/friend';
 import instance from './axiosInstance';
 import { API_ENDPOINTS } from 'constants/apiEndpoints';
 
@@ -13,4 +17,10 @@ const searchFriend = async ({
   return data;
 };
 
-export { searchFriend };
+const applyFriend = async ({ to }: ApplyFriendParams) => {
+  await instance.post(API_ENDPOINTS.APPLY_FRIEND, {
+    to,
+  });
+};
+
+export { searchFriend, applyFriend };

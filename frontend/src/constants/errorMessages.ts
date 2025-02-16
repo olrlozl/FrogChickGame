@@ -57,7 +57,9 @@ export const ERROR_MESSAGES: ErrorMessages = {
     CANNOT_SEARCH_SELF: '본인은 검색할 수 없습니다.',
   },
   GET_FRIEND: {},
-  APPLY_FRIEND: {},
+  APPLY_FRIEND: {
+    UNKNOWN_USER: '존재하지 않는 유저입니다.',
+  },
   GET_FRIEND_RECEIPTS: {},
   RECEPT_FRIEND: {},
   CANCEL_FRIEND_APPLY: {},
