@@ -1,45 +1,32 @@
 import 'styles/components/common/Button/mini-button.scss';
 
 interface MiniButtonProps {
-  miniButtonOption: 'search' | 'add' | 'game' | 'accept' | 'reject';
+  type: 'search' | 'add' | 'game' | 'accept' | 'reject' | 'friend' | 'pending';
+  isLoading?: boolean;
+  onClick?: () => void;
 }
 
-const MiniButton = ({miniButtonOption}: MiniButtonProps) => {
-  
-  const handleClickSearchNickname = () => {
-    
-  }
+const MINI_BUTTON_CONTENTS = {
+  search: { text: '검색' },
+  add: { text: '친구 추가' },
+  game: { text: '대결 신청' },
+  accept: { text: '수락' },
+  reject: { text: '거절' },
+  pending: { text: '친추 취소' },
+  friend: { text: '이미 친구' },
+};
 
-  const handleClickAddFriend = () => {
-    
-  }
-
-  const handleClickRequestGame = () => {
-    
-  }
-
-  const handleClickAcceptFriend = () => {
-    
-  }
-
-  const handleClickRejectFriend = () => {
-    
-  }
-
-  const miniButtonOptions = {
-    search: { text: '검색', onClick: handleClickSearchNickname},
-    add: { text: '친구추가', onClick: handleClickAddFriend},
-    game: { text: '대결신청', onClick: handleClickRequestGame},
-    accept: { text: '수락', onClick: handleClickAcceptFriend},
-    reject: { text: '거절', onClick: handleClickRejectFriend},
-  }
-  const { onClick, text } = miniButtonOptions[miniButtonOption];
+const MiniButton = ({ type, onClick, isLoading }: MiniButtonProps) => {
+  const { text } = MINI_BUTTON_CONTENTS[type];
 
   return (
-    <div className={`mini-button ${miniButtonOption}`} onClick={onClick}>
+    <button
+      className={`mini-button ${type} ${isLoading ? 'disabled' : undefined}`}
+      onClick={onClick}
+    >
       {text}
-    </div>
-  )
-}
+    </button>
+  );
+};
 
-export default MiniButton
+export default MiniButton;
