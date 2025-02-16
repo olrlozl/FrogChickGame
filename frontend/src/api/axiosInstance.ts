@@ -63,9 +63,7 @@ export const setAxiosInterceptorResponse = (
                   ) {
                     return true;
                   } else {
-                    setErrorMessage(
-                      COMMON_MESSAGES.RE_LOGIN
-                    );
+                    setErrorMessage(COMMON_MESSAGES.RE_LOGIN);
                     return false;
                   }
                 } finally {
@@ -85,9 +83,7 @@ export const setAxiosInterceptorResponse = (
               setErrorMessage(COMMON_MESSAGES.RE_LOGIN);
               break;
           }
-        } else if (err.code === 'ERR_NETWORK') {
-          setErrorMessage(ERROR_MESSAGES.COMMON.ERR_NETWORK);
-        } else {
+        } else if (!(err.code === 'ERR_NETWORK')) {
           setErrorMessage(ERROR_MESSAGES.COMMON.OTHER);
         }
       } else if (err instanceof Error) {
