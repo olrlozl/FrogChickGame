@@ -23,7 +23,7 @@ const FriendListSection = () => {
 
   return (
     <div className="friend-list-section">
-      <BalloonTitle title="친구 목록" />
+      <BalloonTitle title="친구 목록"  showRefresh={true} onClick={()=>{}}/>
       <div className="list-box">
         {users.map((user) => {
           return (

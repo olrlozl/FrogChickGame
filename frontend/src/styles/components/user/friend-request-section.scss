@@ -3,16 +3,27 @@
 
 .friend-request-section {
   width: 100%;
+
   .request-box {
     @include user-item;
-    .nickname {
-      font-size: $font-md;
-      color: $color-blue3;
-      padding-left: 10px;
-    }
-    .button-box {
-      @include flex-center;
-      gap: 10px;
+    flex-direction: column;
+
+    .request-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+
+      .nickname {
+        font-size: $font-md;
+        color: $color-blue4;
+        padding-left: 10px;
+      }
+
+      .button-box {
+        @include flex-center;
+        gap: 10px;
+      }
     }
   }
 }
