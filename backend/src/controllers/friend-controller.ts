@@ -18,7 +18,7 @@ const searchFriend = async (
   }
 
   try {
-    const user = await User.findById(userId).exec();
+    const user = await User.findById(userId);
     if (!user) {
       return next(
         new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USERID')
@@ -33,7 +33,7 @@ const searchFriend = async (
 
     validateNickname(nickname);
 
-    const searchedUser = await User.findOne({ nickname }).exec();
+    const searchedUser = await User.findOne({ nickname });
     if (!searchedUser) {
       return next(
         new HttpError('존재하지 않는 사용자입니다.', 404, 'UNKNOWN_USER')
@@ -66,14 +66,14 @@ const applyFriend = async (req: Request, res: Response, next: NextFunction) => {
   const { to } = req.body;
 
   try {
-    const user = await User.findById(userId).exec();
+    const user = await User.findById(userId);
     if (!user) {
       return next(
         new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USERID')
       );
     }
 
-    const toUser = await User.findOne({ nickname: to }).exec();
+    const toUser = await User.findOne({ nickname: to });
     if (!toUser) {
       return next(
         new HttpError('존재하지 않는 사용자입니다.', 404, 'UNKNOWN_USER')
