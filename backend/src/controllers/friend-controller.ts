@@ -11,13 +11,15 @@ const searchFriend = async (
   const userId = req.userId as string;
   const { nickname } = req.query;
 
-  if (!nickname || typeof nickname !== 'string') {
+  if (!nickname) {
     return next(
       new HttpError('nickname이 필요합니다.', 400, 'MISSING_NICKNAME')
     );
   }
 
   try {
+    validateNickname(nickname);
+
     const user = await User.findById(userId);
     if (!user) {
       return next(
@@ -30,8 +32,6 @@ const searchFriend = async (
         new HttpError('본인은 검색할 수 없습니다.', 400, 'CANNOT_SEARCH_SELF')
       );
     }
-
-    validateNickname(nickname);
 
     const searchedUser = await User.findOne({ nickname });
     if (!searchedUser) {
@@ -120,6 +120,7 @@ const getReceivedFriendList = async (
       'friendRequests.received',
       'nickname'
     );
+
     if (!user) {
       return next(
         new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USERID')
