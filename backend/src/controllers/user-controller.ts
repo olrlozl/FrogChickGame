@@ -37,6 +37,8 @@ const createNickname = async (
   }
 
   try {
+    validateNickname(nickname);
+
     const user = await findUserById(userId);
 
     if (user.nickname) {
@@ -48,8 +50,6 @@ const createNickname = async (
         )
       );
     }
-
-    validateNickname(nickname);
 
     const existingNickname = await User.findOne({ nickname });
     if (existingNickname) {
