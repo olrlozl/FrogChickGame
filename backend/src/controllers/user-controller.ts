@@ -1,6 +1,7 @@
 import HttpError from '../models/http-error';
 import User from '../models/user';
 import {
+  findUserById,
   getKakaoTokens,
   getKakaoId,
   logoutKakao,
@@ -36,13 +37,7 @@ const createNickname = async (
   }
 
   try {
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return next(
-        new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USERID')
-      );
-    }
+    const user = await findUserById(userId);
 
     if (user.nickname) {
       return next(

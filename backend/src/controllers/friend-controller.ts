@@ -2,6 +2,7 @@ import HttpError from '../models/http-error';
 import User from '../models/user';
 import { NextFunction, Request, Response } from 'express';
 import { validateNickname } from '../utils/validate';
+import { findUserById } from '../services/user-service';
 
 const searchFriend = async (
   req: Request,
@@ -20,12 +21,7 @@ const searchFriend = async (
   try {
     validateNickname(nickname);
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return next(
-        new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USERID')
-      );
-    }
+    const user = await findUserById(userId);
 
     if (nickname === user.nickname) {
       return next(
@@ -66,12 +62,7 @@ const applyFriend = async (req: Request, res: Response, next: NextFunction) => {
   const { to } = req.body;
 
   try {
-    const user = await User.findById(userId);
-    if (!user) {
-      return next(
-        new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USERID')
-      );
-    }
+    const user = await findUserById(userId);
 
     const toUser = await User.findOne({ nickname: to });
     if (!toUser) {
