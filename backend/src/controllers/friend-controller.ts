@@ -72,14 +72,14 @@ const applyFriend = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     if (user.friends.includes(toUser._id)) {
-      return next(new HttpError('이미 친구입니다.', 400, 'ALREADY_FRIEND'));
+      return next(new HttpError('이미 친구입니다.', 409, 'ALREADY_FRIEND'));
     }
 
     if (user.friendRequests.sent.includes(toUser._id)) {
       return next(
         new HttpError(
           '이미 친구 신청을 보냈습니다.',
-          400,
+          409,
           'ALREADY_APPLY_FRIEND'
         )
       );
