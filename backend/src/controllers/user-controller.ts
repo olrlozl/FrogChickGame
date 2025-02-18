@@ -316,7 +316,7 @@ const refreshJwtAccessToken = async (
 
         if (!user) {
           return next(
-            new HttpError('사용자를 찾을 수 없습니다.', 404, 'INVALID_USER')
+            new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USERID')
           );
         }
 

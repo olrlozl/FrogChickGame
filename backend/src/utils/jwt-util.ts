@@ -49,7 +49,11 @@ const verifyJwtToken = async (jwtToken: string, tokenType: TokenType) => {
       const user = await User.findById(userId).select('revokedAt');
 
       if (!user) {
-        throw new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USER');
+        throw new HttpError(
+          '사용자를 찾을 수 없습니다.',
+          401,
+          'INVALID_USERID'
+        );
       }
 
       // 토큰 발행시간 보다 DB의 revokedAt가 더 최신일 경우 토큰 무효화
