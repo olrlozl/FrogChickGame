@@ -82,13 +82,17 @@ const createNickname = async (
 
     res.status(201).send();
   } catch (error) {
-    return next(
-      new HttpError(
-        '닉네임 생성에 실패했습니다.',
-        500,
-        'FAILED_CREATE_NICKNAME'
-      )
-    );
+    if (error instanceof HttpError) {
+      return next(error);
+    } else {
+      return next(
+        new HttpError(
+          '닉네임 생성에 실패했습니다.',
+          500,
+          'FAILED_CREATE_NICKNAME'
+        )
+      );
+    }
   }
 };
 
