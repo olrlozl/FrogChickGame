@@ -94,7 +94,7 @@ const applyFriend = async (req: Request, res: Response, next: NextFunction) => {
     await user.save();
     await toUser.save();
 
-    res.status(200).send();
+    res.status(204).send();
   } catch (error) {
     return next(
       new HttpError('친구 신청에 실패했습니다.', 500, 'FAILED_APPLY_FRIEND')

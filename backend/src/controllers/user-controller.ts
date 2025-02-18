@@ -157,7 +157,7 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
         sameSite: 'strict',
       });
 
-      res.status(200).send();
+      res.status(204).send();
     }
     // 2. 이미 가입했지만, 닉네임이 없는 경우
     else if (signedupUser && !signedupUser.nickname) {
@@ -333,7 +333,7 @@ const refreshJwtAccessToken = async (
           sameSite: 'strict',
         });
 
-        res.status(200).send();
+        res.status(204).send();
       } else {
         throw error;
       }
