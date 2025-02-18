@@ -104,9 +104,9 @@ const getReceivedFriendList = async (
   res: Response,
   next: NextFunction
 ) => {
-  try {
-    const userId = req.userId as string;
+  const userId = req.userId as string;
 
+  try {
     const user = await User.findById(userId).populate(
       'friendRequests.received',
       'nickname'
@@ -124,17 +124,13 @@ const getReceivedFriendList = async (
 
     res.status(200).json({ receivedList });
   } catch (error) {
-    if (error instanceof HttpError) {
-      return next(error);
-    } else {
-      return next(
-        new HttpError(
-          '친구 신청 목록 조회에 실패했습니다.',
-          500,
-          'FAILED_GET_RECEIVED_FRIEND_LIST'
-        )
-      );
-    }
+    return next(
+      new HttpError(
+        '친구 신청 목록 조회에 실패했습니다.',
+        500,
+        'FAILED_GET_RECEIVED_FRIEND_LIST'
+      )
+    );
   }
 };
 
