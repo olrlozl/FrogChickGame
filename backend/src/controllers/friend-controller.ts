@@ -43,7 +43,7 @@ const searchFriend = async (
     const isFriend = user.friends.includes(searchedUser._id);
     const isSent = user.friendRequests.sent.includes(searchedUser._id);
 
-    res.json({
+    res.status(200).json({
       nickname,
       wins: searchedUser.wins,
       losses: searchedUser.losses,
@@ -131,7 +131,7 @@ const getReceivedFriendList = async (
       nickname: friend.nickname,
     }));
 
-    res.json({ receivedList });
+    res.status(200).json({ receivedList });
   } catch (error) {
     if (error instanceof HttpError) {
       return next(error);
