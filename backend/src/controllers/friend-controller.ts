@@ -3,6 +3,7 @@ import User from '../models/user';
 import { NextFunction, Request, Response } from 'express';
 import { validateNickname } from '../utils/validate';
 import { findUserById } from '../services/user-service';
+import mongoose from 'mongoose';
 
 const searchFriend = async (
   req: Request,
@@ -61,10 +62,20 @@ const applyFriend = async (req: Request, res: Response, next: NextFunction) => {
   const userId = req.userId as string;
   const { to } = req.body;
 
-  try {
-    const user = await findUserById(userId);
+  const session = await mongoose.startSession();
+  session.startTransaction(); // 트랜잭션 시작
 
-    const toUser = await User.findOne({ nickname: to });
+  try {
+    const user = await User.findById(userId)
+      .select('friends friendRequests')
+      .session(session);
+    if (!user) {
+      throw new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USERID');
+    }
+
+    const toUser = await User.findOne({ nickname: to })
+      .select('friends friendRequests')
+      .session(session);
     if (!toUser) {
       return next(
         new HttpError('존재하지 않는 사용자입니다.', 404, 'UNKNOWN_USER')
@@ -88,17 +99,27 @@ const applyFriend = async (req: Request, res: Response, next: NextFunction) => {
       );
     }
 
-    user.friendRequests.sent.push(toUser._id);
-    toUser.friendRequests.received.push(user._id);
+    if (!user.friendRequests.sent.includes(toUser._id)) {
+      user.friendRequests.sent.push(toUser._id);
+    }
 
-    await user.save();
-    await toUser.save();
+    if (!toUser.friendRequests.received.includes(user._id)) {
+      toUser.friendRequests.received.push(user._id);
+    }
+
+    await user.save({ session });
+    await toUser.save({ session });
+
+    await session.commitTransaction(); // 트랜젝션 커밋
 
     res.status(204).send();
   } catch (error) {
+    await session.abortTransaction(); // 오류 발생 시 롤백
     return next(
       new HttpError('친구 신청에 실패했습니다.', 500, 'FAILED_APPLY_FRIEND')
     );
+  } finally {
+    session.endSession(); // 세션 종료
   }
 };
 
