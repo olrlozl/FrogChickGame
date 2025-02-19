@@ -16,7 +16,6 @@ export interface KakaoLoginParams {
   code: string;
 }
 
-
 export interface CreateNicknameParams {
   userId: string;
   nickname: string;

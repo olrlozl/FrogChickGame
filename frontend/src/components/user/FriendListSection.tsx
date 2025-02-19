@@ -4,27 +4,26 @@ import UserInfo from 'components/user/UserInfo';
 import MiniButton from 'components/common/Button/MiniButton';
 import UserState from 'components/user/UserState';
 import { UserInfoInterface } from 'types/user';
+import { FriendStatus } from 'types/friend';
+
+interface Friend {
+  userInfo: UserInfoInterface;
+  status: FriendStatus;
+}
 
 const FriendListSection = () => {
-  type userStateType = 'online' | 'offline' | 'playing';
-
-  interface User {
-    userInfo: UserInfoInterface;
-    state: userStateType;
-  }
-
-  const users: User[] = [
+  const users: Friend[] = [
     {
       userInfo: { nickname: '은지여섯글자', wins: 10, losses: 3 },
-      state: 'online',
+      status: 'online',
     },
-    { userInfo: { nickname: '현수', wins: 5, losses: 1 }, state: 'playing' },
-    { userInfo: { nickname: '에찌얌', wins: 4, losses: 1 }, state: 'offline' },
+    { userInfo: { nickname: '현수', wins: 5, losses: 1 }, status: 'playing' },
+    { userInfo: { nickname: '에찌얌', wins: 4, losses: 1 }, status: 'offline' },
   ];
 
   return (
     <div className="friend-list-section">
-      <BalloonTitle title="친구 목록" />
+      <BalloonTitle title="친구 목록"  showRefresh={true} onClick={()=>{}}/>
       <div className="list-box">
         {users.map((user) => {
           return (
@@ -33,10 +32,10 @@ const FriendListSection = () => {
                 userInfoOption="list"
                 userInfo={user.userInfo}
               />
-              {user.state === 'online' ? (
-                <MiniButton miniButtonOption="game" />
+              {user.status === 'online' ? (
+                <MiniButton type="game" />
               ) : (
-                <UserState state={user.state} />
+                <UserState state={user.status} />
               )}
             </div>
           );
