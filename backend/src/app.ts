@@ -7,6 +7,7 @@ import playRouter from './routes/play-route';
 import HttpError from './models/http-error';
 import { checkAuth } from './middleware/auth-middleware';
 import cookieParser from 'cookie-parser';
+import friendRouter from './routes/friend-route';
 
 const app = express();
 
@@ -35,11 +36,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 // 특정 API 제외하고 모든 요청에 checkAuth 적용
 app.use((req: Request, res: Response, next: NextFunction) => {
   // 인증 없이 접근할 수 있는 API 경로
-  const openPaths = [
-    '/api/user/nickname',
-    '/api/user/login/kakao',
-    '/api/user/refresh/jwt-access-token',
-  ];
+  const openPaths = ['/api/user/nickname', '/api/user/login/kakao'];
 
   if (openPaths.includes(req.path)) {
     return next(); // 인증 없이 바로 다음 미들웨어 실행
@@ -49,6 +46,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use('/api/user', userRouter);
+app.use('/api/friend', friendRouter);
 app.use('/api/rank', rankRouter);
 app.use('/api/play', playRouter);
 

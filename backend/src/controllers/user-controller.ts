@@ -1,6 +1,7 @@
 import HttpError from '../models/http-error';
 import User from '../models/user';
 import {
+  findUserById,
   getKakaoTokens,
   getKakaoId,
   logoutKakao,
@@ -36,13 +37,9 @@ const createNickname = async (
   }
 
   try {
-    const user = await User.findById(userId);
+    validateNickname(nickname);
 
-    if (!user) {
-      return next(
-        new HttpError('사용자를 찾을 수 없습니다.', 404, 'NOT_FOUND_USER')
-      );
-    }
+    const user = await findUserById(userId);
 
     if (user.nickname) {
       return next(
@@ -53,8 +50,6 @@ const createNickname = async (
         )
       );
     }
-
-    validateNickname(nickname);
 
     const existingNickname = await User.findOne({ nickname });
     if (existingNickname) {
@@ -87,13 +82,17 @@ const createNickname = async (
 
     res.status(201).send();
   } catch (error) {
-    return next(
-      new HttpError(
-        '닉네임 생성에 실패했습니다.',
-        500,
-        'FAILED_CREATE_NICKNAME'
-      )
-    );
+    if (error instanceof HttpError) {
+      return next(error);
+    } else {
+      return next(
+        new HttpError(
+          '닉네임 생성에 실패했습니다.',
+          500,
+          'FAILED_CREATE_NICKNAME'
+        )
+      );
+    }
   }
 };
 
@@ -158,7 +157,7 @@ const kakaoLogin = async (req: Request, res: Response, next: NextFunction) => {
         sameSite: 'strict',
       });
 
-      res.status(200).send();
+      res.status(204).send();
     }
     // 2. 이미 가입했지만, 닉네임이 없는 경우
     else if (signedupUser && !signedupUser.nickname) {
@@ -313,13 +312,8 @@ const refreshJwtAccessToken = async (
       // jwt 엑세스 토큰이 만료된 경우 갱신
       if (error instanceof HttpError && error.type === 'EXPIRED_JWT_TOKEN') {
         const userId = getUserIdFromJwtAccessToken(jwtAccessToken);
-        const user = await User.findById(userId);
 
-        if (!user) {
-          return next(
-            new HttpError('사용자를 찾을 수 없습니다.', 404, 'NOT_FOUND_USER')
-          );
-        }
+        await findUserById(userId);
 
         const jwtRefreshToken = await getTokenFromRedis(userId, 'jwtRefresh');
 
@@ -334,7 +328,7 @@ const refreshJwtAccessToken = async (
           sameSite: 'strict',
         });
 
-        res.status(200).send();
+        res.status(204).send();
       } else {
         throw error;
       }

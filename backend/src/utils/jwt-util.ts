@@ -51,8 +51,8 @@ const verifyJwtToken = async (jwtToken: string, tokenType: TokenType) => {
       if (!user) {
         throw new HttpError(
           '사용자를 찾을 수 없습니다.',
-          404,
-          'USER_NOT_FOUND'
+          401,
+          'INVALID_USERID'
         );
       }
 

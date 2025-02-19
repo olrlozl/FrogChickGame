@@ -1,11 +1,20 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import dotenv from 'dotenv';
 import HttpError from '../models/http-error';
 import redisClient from '../config/redis-client';
 import { TokenCategory } from '../types/token';
+import User from '../models/user';
 
 dotenv.config();
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
+
+const findUserById = async (userId: string) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USERID');
+  }
+  return user;
+};
 
 // 인가 코드로 카카오 엑세스/리프레시 토큰과 만료 시간 받기
 const getKakaoTokens = async (redirectUri: string, code: string) => {
@@ -185,6 +194,7 @@ const removeTokensFromRedis = async (userId: string) => {
 };
 
 export {
+  findUserById,
   getKakaoTokens,
   getKakaoId,
   logoutKakao,
