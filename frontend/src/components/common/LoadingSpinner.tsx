@@ -5,12 +5,13 @@ import { MUTATION_KEYS } from 'constants/reactQueryKeys';
 import 'styles/components/common/loading-spinner.scss';
 
 const LoadingSpinner = () => {
-  const isFetching = useIsFetching();
+  // const isFetching = useIsFetching({ queryKey: [''] });
   const isLoginMutating = useIsMutating({
     mutationKey: [MUTATION_KEYS.login],
   });
-  const isLoading = !!(isFetching || isLoginMutating);
-  
+  // const isLoading = !!(isFetching || isLoginMutating);
+  const isLoading = !!isLoginMutating;
+
   return (
     <div className={`loading-spinner ${isLoading ? undefined : 'disabled'}`}>
       <OverLay />

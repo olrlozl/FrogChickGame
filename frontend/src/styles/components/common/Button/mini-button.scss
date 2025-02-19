@@ -26,10 +26,24 @@
   &.accept {
     background-color: $color-blue3;
   }
-  
+
   &.reject {
     background-color: $color-blue2;
     color: $color-blue4;
     border: 1px solid $color-blue3;
+  }
+
+  &.pending {
+    color: #929292;
+    border: none;
+    background-color: #d9d9d9;
+  }
+
+  &.friend {
+    @include disabled;
+  }
+
+  &.disabled {
+    @include disabled;
   }
 }

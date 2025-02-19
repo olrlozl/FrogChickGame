@@ -7,15 +7,15 @@ interface UserInfoProps {
   userInfo: UserInfoInterface;
 }
 
-const UserInfo = ({userInfoOption, userInfo}: UserInfoProps) => {
-  const {nickname, wins, losses} = userInfo;
-  let color = userInfoOption === 'search' ? 'main-green' : 'main-yellow';
+const UserInfo = ({ userInfoOption, userInfo }: UserInfoProps) => {
+  const { nickname, wins, losses } = userInfo;
+  const color = userInfoOption === 'search' ? 'main-green' : 'main-yellow';
   return (
-    <div className='user-info'>
+    <div className="user-info">
       <span className={`nickname ${userInfoOption}`}>{nickname}</span>
-      <WinLoseBox wins={wins} losses={losses} color={color} size='font-md'/>
+      <WinLoseBox wins={wins} losses={losses} color={color} size="font-md" />
     </div>
-  )
-}
+  );
+};
 
-export default UserInfo
+export default UserInfo;
