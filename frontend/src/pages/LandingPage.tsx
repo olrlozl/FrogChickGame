@@ -57,6 +57,7 @@ const LandingPage = () => {
           nickname={nickname}
           setNickname={setNickname}
           setErrorMessage={setNicknameErrorMessage}
+          onEnter={validateAndCreateNickname}
         />
         <Modal.ErrorMessage errorMessage={nicknameErrorMessage} />
       </Modal>

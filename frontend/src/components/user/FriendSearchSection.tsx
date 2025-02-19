@@ -30,6 +30,7 @@ const FriendSearchSection = () => {
           nickname={nickname}
           setNickname={setNickname}
           setErrorMessage={setNicknameErrorMessage}
+          onEnter={validateAndSearchFriend}
         />
         <MiniButton
           type="search"

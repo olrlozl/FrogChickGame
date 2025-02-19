@@ -1,3 +1,4 @@
+import { KeyboardEventHandler } from 'react';
 import 'styles/components/user/nickname-input.scss';
 import { ChangeEvent, SetState } from 'types/common';
 
@@ -8,10 +9,11 @@ interface NicknameInputProps {
   text: string;
   nickname: string;
   setNickname: SetState<string>;
-  setErrorMessage: SetState<string>
+  setErrorMessage: SetState<string>;
+  onEnter: () => void;
 }
 
-const NicknameInput = ({ text, nickname, setNickname, setErrorMessage }: NicknameInputProps) => {
+const NicknameInput = ({ text, nickname, setNickname, setErrorMessage, onEnter }: NicknameInputProps) => {
   const handleChangeNickname = (e: ChangeEvent) => {
     setErrorMessage('');
     if (e.target.value.length > NICKNAME_MAX_LENGTH) {
@@ -21,6 +23,10 @@ const NicknameInput = ({ text, nickname, setNickname, setErrorMessage }: Nicknam
     }
   }
 
+  const executeOnEnter: KeyboardEventHandler<HTMLInputElement> = (e) => {
+    if (e.key === 'Enter') onEnter();
+  }
+
   return (
     <input
       className='nickname-input'
@@ -28,6 +34,7 @@ const NicknameInput = ({ text, nickname, setNickname, setErrorMessage }: Nicknam
       placeholder={text}
       value={nickname}
       onChange={(e) => handleChangeNickname(e)}
+      onKeyDown={executeOnEnter}
       pattern="^[가-힣a-zA-Z]{2,6}$"
       minLength={NICKNAME_MIN_LENGTH}
       maxLength={NICKNAME_MAX_LENGTH}
