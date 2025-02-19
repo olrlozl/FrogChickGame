@@ -312,13 +312,8 @@ const refreshJwtAccessToken = async (
       // jwt 엑세스 토큰이 만료된 경우 갱신
       if (error instanceof HttpError && error.type === 'EXPIRED_JWT_TOKEN') {
         const userId = getUserIdFromJwtAccessToken(jwtAccessToken);
-        const user = await User.findById(userId);
 
-        if (!user) {
-          return next(
-            new HttpError('사용자를 찾을 수 없습니다.', 401, 'INVALID_USERID')
-          );
-        }
+        await findUserById(userId);
 
         const jwtRefreshToken = await getTokenFromRedis(userId, 'jwtRefresh');
 
