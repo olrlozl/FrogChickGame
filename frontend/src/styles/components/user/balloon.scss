@@ -10,6 +10,15 @@
   max-width: 360px;
   border-radius: 10px;
   position: relative;
+  overflow-y: auto;
+  
+  // 크롬, 사파리, Edge
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  // Firefox
+  scrollbar-width: none;
 
   &.friend {
     padding: 18px 10px;
